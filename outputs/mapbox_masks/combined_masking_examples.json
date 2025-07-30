@@ -1,0 +1,36 @@
+{
+  "combined_masking_approach": {
+    "description": "Using both tree cover and elevation rasters together",
+    "setup": {
+      "tree_cover_raster": "pnw_tree_cover_90m_mapbox.tif (0-100% values)",
+      "elevation_raster": "pnw_elevation_120m_mapbox.tif (0-15000ft values)"
+    }
+  },
+  "mapbox_gl_js_dual_masking": {
+    "species_habitat_masking": {
+      "description": "Combine elevation and tree cover for species habitat",
+      "code": "\n// Add both raster sources\nmap.addSource('tree-cover', {\n    type: 'raster',\n    url: 'mapbox://your-username.tree-cover-tileset'\n});\n\nmap.addSource('elevation', {\n    type: 'raster', \n    url: 'mapbox://your-username.elevation-tileset'\n});\n\n// Species layer with dual masking\nmap.addLayer({\n    id: 'douglas-fir-habitat',\n    type: 'circle',\n    source: 'species-plots',\n    'source-layer': 'douglas_fir_plots',\n    paint: {\n        'circle-opacity': [\n            'case',\n            [\n                'all',\n                ['>=', ['raster-value', 'tree-cover'], 20],  // >20% tree cover\n                ['>=', ['raster-value', 'elevation'], 500],   // >500ft elevation\n                ['<=', ['raster-value', 'elevation'], 6000]   // <6000ft elevation\n            ], 0.8,\n            0.1\n        ],\n        'circle-color': [\n            'interpolate', ['linear'], ['raster-value', 'elevation'],\n            0, '#2c7fb8',      // Low elevation - blue\n            3000, '#41b6c4',   // Mid elevation - teal  \n            6000, '#253494'    // High elevation - dark blue\n        ]\n    }\n});\n"
+    },
+    "interactive_controls": {
+      "description": "Dynamic controls for both masks",
+      "code": "\n// HTML controls\n<div class=\"controls\">\n    <label>Min Tree Cover: <span id=\"treeCoverValue\">20</span>%</label>\n    <input type=\"range\" id=\"treeCoverSlider\" min=\"0\" max=\"100\" value=\"20\">\n    \n    <label>Min Elevation: <span id=\"elevationMinValue\">0</span>ft</label>\n    <input type=\"range\" id=\"elevationMinSlider\" min=\"0\" max=\"10000\" value=\"0\">\n    \n    <label>Max Elevation: <span id=\"elevationMaxValue\">8000</span>ft</label>\n    <input type=\"range\" id=\"elevationMaxSlider\" min=\"0\" max=\"15000\" value=\"8000\">\n</div>\n\n// JavaScript event handlers\ndocument.getElementById('treeCoverSlider').addEventListener('input', function(e) {\n    const minCover = parseInt(e.target.value);\n    const minElev = parseInt(document.getElementById('elevationMinSlider').value);\n    const maxElev = parseInt(document.getElementById('elevationMaxSlider').value);\n    \n    updateSpeciesFilter(minCover, minElev, maxElev);\n});\n\nfunction updateSpeciesFilter(minCover, minElev, maxElev) {\n    const filter = [\n        'all',\n        ['>=', ['raster-value', 'tree-cover'], minCover],\n        ['>=', ['raster-value', 'elevation'], minElev],\n        ['<=', ['raster-value', 'elevation'], maxElev]\n    ];\n    \n    map.setFilter('species-habitat', filter);\n}\n"
+    }
+  },
+  "species_specific_combinations": {
+    "douglas_fir": {
+      "tree_cover": ">=20%",
+      "elevation": "0-6000ft",
+      "description": "Coastal to montane forests"
+    },
+    "western_juniper": {
+      "tree_cover": ">=5%",
+      "elevation": "2000-8000ft",
+      "description": "High desert and montane zones"
+    },
+    "bigleaf_maple": {
+      "tree_cover": ">=30%",
+      "elevation": "0-4000ft",
+      "description": "Moist lowland and foothill forests"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "basic_tree_cover_mask": {
+    "description": "Show species data only in areas with >20% tree cover",
+    "filter": [
+      ">=",
+      [
+        "raster-value"
+      ],
+      20
+    ],
+    "paint": {
+      "circle-opacity": [
+        "case",
+        [
+          ">=",
+          [
+            "raster-value"
+          ],
+          20
+        ],
+        0.8,
+        0.2
+      ]
+    }
+  },
+  "graduated_tree_cover": {
+    "description": "Opacity based on tree cover percentage",
+    "paint": {
+      "circle-opacity": [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "raster-value"
+        ],
+        0,
+        0.1,
+        20,
+        0.4,
+        50,
+        0.7,
+        80,
+        1.0
+      ]
+    }
+  },
+  "forest_type_masking": {
+    "description": "Different styles for different forest densities",
+    "paint": {
+      "circle-color": [
+        "case",
+        [
+          ">=",
+          [
+            "raster-value"
+          ],
+          60
+        ],
+        "#006d2c",
+        [
+          ">=",
+          [
+            "raster-value"
+          ],
+          30
+        ],
+        "#41ab5d",
+        [
+          ">=",
+          [
+            "raster-value"
+          ],
+          10
+        ],
+        "#a1d99b",
+        "#fee5d9"
+      ]
+    }
+  },
+  "species_specific_masking": {
+    "description": "Different thresholds for different species",
+    "paint": {
+      "circle-opacity": [
+        "case",
+        [
+          "==",
+          [
+            "get",
+            "species"
+          ],
+          "western_juniper"
+        ],
+        [
+          "case",
+          [
+            ">=",
+            [
+              "raster-value"
+            ],
+            5
+          ],
+          0.8,
+          0.1
+        ],
+        [
+          "case",
+          [
+            ">=",
+            [
+              "raster-value"
+            ],
+            30
+          ],
+          0.8,
+          0.1
+        ]
+      ]
+    }
+  }
+}

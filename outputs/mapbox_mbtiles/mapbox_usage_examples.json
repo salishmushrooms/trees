@@ -1,0 +1,150 @@
+{
+  "mapbox_gl_js_examples": {
+    "basic_species_layer": {
+      "description": "Basic species distribution layer",
+      "code": {
+        "source": {
+          "type": "vector",
+          "url": "mapbox://your-username.your-tileset-id"
+        },
+        "layer": {
+          "id": "douglas-fir-distribution",
+          "type": "fill",
+          "source": "douglas-fir-source",
+          "source-layer": "douglas_fir_range",
+          "paint": {
+            "fill-color": "#2E8B57",
+            "fill-opacity": 0.6,
+            "fill-outline-color": "#1C5F3A"
+          }
+        }
+      }
+    },
+    "multiple_species_layers": {
+      "description": "Add multiple species as separate layers with unique names",
+      "examples": [
+        {
+          "species": "Douglas Fir",
+          "source_layer": "douglas_fir_range",
+          "color": "#2E8B57"
+        },
+        {
+          "species": "Western Hemlock",
+          "source_layer": "western_hemlock_range",
+          "color": "#228B22"
+        },
+        {
+          "species": "Bigleaf Maple",
+          "source_layer": "bigleaf_maple_range",
+          "color": "#FF6347"
+        }
+      ],
+      "note": "Each species gets its own unique source-layer name based on the species name"
+    },
+    "zoom_based_visibility": {
+      "description": "Show/hide based on zoom level",
+      "code": {
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            6,
+            0.3,
+            10,
+            0.7,
+            14,
+            0.9
+          ]
+        }
+      }
+    }
+  },
+  "mapbox_studio_examples": {
+    "species_habitat_style": {
+      "filter": [
+        "==",
+        [
+          "get",
+          "habitat_type"
+        ],
+        "primary"
+      ],
+      "paint": {
+        "fill-color": "#2E8B57",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.4,
+          12,
+          0.8
+        ]
+      }
+    }
+  },
+  "combined_tileset_usage": {
+    "description": "Using the combined multi-layer tileset",
+    "single_source_multiple_layers": {
+      "source": {
+        "type": "vector",
+        "url": "mapbox://your-username.your-combined-tileset-id"
+      },
+      "layers": [
+        {
+          "id": "douglas-fir-layer",
+          "source": "pnw-species-source",
+          "source-layer": "douglas_fir_range",
+          "type": "fill",
+          "paint": {
+            "fill-color": "#2E8B57",
+            "fill-opacity": 0.7
+          }
+        },
+        {
+          "id": "bigleaf-maple-layer",
+          "source": "pnw-species-source",
+          "source-layer": "bigleaf_maple_range",
+          "type": "fill",
+          "paint": {
+            "fill-color": "#FF6347",
+            "fill-opacity": 0.7
+          }
+        }
+      ]
+    },
+    "layer_control": {
+      "toggle_visibility": "map.setLayoutProperty('douglas-fir-layer', 'visibility', 'visible')",
+      "change_opacity": "map.setPaintProperty('douglas-fir-layer', 'fill-opacity', 0.5)"
+    }
+  },
+  "upload_instructions": {
+    "steps": [
+      "1. Go to Mapbox Studio > Tilesets",
+      "2. Click 'New tileset'",
+      "3. Upload the single combined .mbtiles file",
+      "4. One tileset contains all species as separate layers",
+      "5. Reference unique layer names in your map styles",
+      "6. Toggle each species layer independently"
+    ],
+    "tips": [
+      "Single tileset upload is faster than multiple uploads",
+      "Each species gets its own unique layer name",
+      "Use zoom levels 6-10 for regional viewing",
+      "Higher zoom levels (12-16) for detailed inspection",
+      "Perfect balance of organization and control"
+    ]
+  }
+}

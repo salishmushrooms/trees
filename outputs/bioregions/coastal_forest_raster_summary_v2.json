@@ -1,0 +1,26 @@
+{
+  "method": "raster_based_constraints_v2",
+  "parameters": {
+    "longitude_cutoff": -123.5,
+    "max_elevation_ft": 300,
+    "min_tree_cover_pct": 15,
+    "output_resolution_m": 120,
+    "distance_from_coast_km": 30,
+    "puget_sound_excluded": true,
+    "min_area_sqkm": 2.0,
+    "simplification_tolerance": 0.005
+  },
+  "data_sources": {
+    "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
+    "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif",
+    "validation": "outputs/plot_carbon_percentiles_latest_surveys.geojson"
+  },
+  "validation": {
+    "total_shore_pine_plots": 5017,
+    "coastal_shore_pine_plots": 43,
+    "plots_captured_by_bioregion": 13,
+    "capture_rate": 0.3023255813953488,
+    "validation_success": false
+  },
+  "created": "2025-07-28T15:32:03.508517"
+}

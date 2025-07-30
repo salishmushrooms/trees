@@ -1,0 +1,47 @@
+202.0|Douglas-fir|Pseudotsuga menziesii|190211
+122.0|ponderosa pine|Pinus ponderosa|84939
+108.0|lodgepole pine|Pinus contorta|63374
+263.0|western hemlock|Tsuga heterophylla|36829
+17.0|grand fir|Abies grandis|32295
+15.0|white fir|Abies concolor|27402
+264.0|mountain hemlock|Tsuga mertensiana|16942
+351.0|red alder|Alnus rubra|15307
+64.0|western juniper|Juniperus occidentalis|14715
+11.0|Pacific silver fir|Abies amabilis|12776
+631.0|tanoak|Lithocarpus densiflorus|11275
+361.0|Pacific madrone|Arbutus menziesii|8952
+242.0|western redcedar|Thuja plicata|8817
+312.0|bigleaf maple|Acer macrophyllum|7771
+81.0|incense-cedar|Calocedrus decurrens|6988
+21.0|Shasta red fir|Abies shastensis|5956
+19.0|subalpine fir|Abies lasiocarpa|5842
+73.0|western larch|Larix occidentalis|5581
+93.0|Engelmann spruce|Picea engelmannii|5346
+815.0|Oregon white oak|Quercus garryana|4611
+431.0|giant chinkapin, golden chinkapin|Chrysolepis chrysophylla var. chrysophylla|4449
+22.0|noble fir|Abies procera|4160
+805.0|canyon live oak|Quercus chrysolepis|4062
+98.0|Sitka spruce|Picea sitchensis|2700
+117.0|sugar pine|Pinus lambertiana|2202
+119.0|western white pine|Pinus monticola|2056
+818.0|California black oak|Quercus kelloggii|1888
+475.0|curlleaf mountain-mahogany|Cercocarpus ledifolius|1855
+981.0|California laurel|Umbellularia californica|1682
+41.0|Port-Orford-cedar|Chamaecyparis lawsoniana|1446
+231.0|Pacific yew|Taxus brevifolia|1397
+101.0|whitebark pine|Pinus albicaulis|1115
+768.0|bitter cherry|Prunus emarginata|817
+746.0|quaking aspen|Populus tremuloides|637
+542.0|Oregon ash|Fraxinus latifolia|580
+116.0|Jeffrey pine|Pinus jeffreyi|521
+492.0|Pacific dogwood|Cornus nuttallii|487
+747.0|black cottonwood|Populus balsamifera ssp. trichocarpa|390
+321.0|Rocky Mountain maple|Acer glabrum|372
+20.0|California red fir|Abies magnifica|325
+103.0|knobcone pine|Pinus attenuata|247
+211.0|redwood|Sequoia sempervirens|176
+920.0|willow spp.|Salix spp.|162
+760.0|Prunus|Prunus spp.|155
+42.0|Alaska yellow-cedar|Chamaecyparis nootkatensis|147
+352.0|white alder|Alnus rhombifolia|133
+763.0|chokecherry|Prunus virginiana|124

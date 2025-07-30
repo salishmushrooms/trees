@@ -1,0 +1,48 @@
+# Large data files
+*.db
+*.tif
+
+# Large data directories
+data/raw/hydrography/
+data/raw/PNW\ Forest\ Inventory/
+data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.bil
+data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.stx
+data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.aux.xml
+
+# Cache and temporary files
+cache/
+*.tmp
+*.temp
+scratch.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

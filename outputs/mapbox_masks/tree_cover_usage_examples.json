@@ -1,0 +1,156 @@
+{
+  "mapbox_gl_js_examples": {
+    "basic_masking": {
+      "description": "Basic tree cover threshold masking",
+      "code": {
+        "filter": [
+          ">=",
+          [
+            "raster-value"
+          ],
+          20
+        ],
+        "paint": {
+          "circle-opacity": [
+            "case",
+            [
+              ">=",
+              [
+                "raster-value"
+              ],
+              20
+            ],
+            0.8,
+            0.2
+          ]
+        }
+      }
+    },
+    "species_specific": {
+      "description": "Different thresholds for different species",
+      "code": {
+        "paint": {
+          "circle-opacity": [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "species"
+              ],
+              "western_juniper"
+            ],
+            [
+              "case",
+              [
+                ">=",
+                [
+                  "raster-value"
+                ],
+                5
+              ],
+              0.8,
+              0.1
+            ],
+            [
+              "==",
+              [
+                "get",
+                "species"
+              ],
+              "douglas_fir"
+            ],
+            [
+              "case",
+              [
+                ">=",
+                [
+                  "raster-value"
+                ],
+                30
+              ],
+              0.8,
+              0.1
+            ],
+            [
+              "case",
+              [
+                ">=",
+                [
+                  "raster-value"
+                ],
+                20
+              ],
+              0.8,
+              0.1
+            ]
+          ]
+        }
+      }
+    },
+    "graduated_masking": {
+      "description": "Smooth opacity transitions based on tree cover",
+      "code": {
+        "paint": {
+          "circle-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "raster-value"
+            ],
+            0,
+            0.0,
+            10,
+            0.2,
+            30,
+            0.5,
+            60,
+            0.8,
+            90,
+            1.0
+          ]
+        }
+      }
+    },
+    "forest_density_coloring": {
+      "description": "Color points based on forest density",
+      "code": {
+        "paint": {
+          "circle-color": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "raster-value"
+            ],
+            0,
+            "#fee5d9",
+            20,
+            "#fcbba1",
+            40,
+            "#fc9272",
+            60,
+            "#fb6a4a",
+            80,
+            "#de2d26"
+          ]
+        }
+      }
+    }
+  },
+  "mapbox_studio_expressions": {
+    "layer_filter": "['>=', ['raster-value'], 25]",
+    "opacity_expression": "['interpolate', ['linear'], ['raster-value'], 0, 0.1, 50, 1.0]",
+    "color_expression": "['case', ['>=', ['raster-value'], 60], '#006d2c', ['>=', ['raster-value'], 30], '#41ab5d', '#a1d99b']"
+  },
+  "common_thresholds": {
+    "dense_forest": ">= 60% tree cover",
+    "medium_forest": "30-60% tree cover",
+    "light_forest": "10-30% tree cover",
+    "savanna_woodland": "5-15% tree cover",
+    "grassland": "< 5% tree cover"
+  }
+}

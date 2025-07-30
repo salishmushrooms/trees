@@ -1,0 +1,52 @@
+{
+  "dataset_info": {
+    "name": "Pacific Northwest Forest Bioregions",
+    "version": "1.0",
+    "description": "Combined forest bioregions for habitat mapping and species distribution analysis",
+    "coordinate_system": "EPSG:4326 (WGS84)",
+    "created_date": "2025-07-29T13:51:28.526392"
+  },
+  "summary_statistics": {
+    "total_regions": 1,
+    "total_features": 1,
+    "total_area_km2": 9010.98799199996,
+    "combined_bounds": {
+      "minx": -124.754,
+      "miny": 41.624,
+      "maxx": -123.25,
+      "maxy": 48.395
+    }
+  },
+  "individual_regions": [
+    {
+      "region_name": "coastal_forest_shapefile",
+      "region_code": "COASTALF",
+      "source_file": "coastal_forest_shapefile_constrained.geojson",
+      "feature_count": 1,
+      "area_km2": 9010.98799199996,
+      "bounds": {
+        "minx": -124.754,
+        "miny": 41.624,
+        "maxx": -123.25,
+        "maxy": 48.395
+      }
+    }
+  ],
+  "output_files": {
+    "combined_bioregions": "outputs/bioregions/all_bioregions_combined.geojson",
+    "summary_report": "bioregions_combination_summary.json",
+    "mbtiles": "outputs/mapbox_mbtiles/pnw_forest_bioregions.mbtiles"
+  },
+  "usage_notes": {
+    "web_mapping": "Use region_name field for layer styling and filtering",
+    "analysis": "Use region_code for joining with species data",
+    "validation": "Check area_km2 field for bioregion size statistics"
+  },
+  "mbtiles_info": {
+    "max_zoom": 14,
+    "layer_name": "bioregions",
+    "file_size_mb": 3.9,
+    "created_date": "2025-07-29T13:51:33.337627",
+    "tippecanoe_version": ""
+  }
+}

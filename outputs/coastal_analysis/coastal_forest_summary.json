@@ -1,0 +1,16 @@
+{
+  "total_coastal_plots": 2234,
+  "elevation_range": {
+    "min": 0.0,
+    "max": 988.0,
+    "mean": 515.759623992838
+  },
+  "latitude_range": {
+    "min": 42.004244,
+    "max": 48.991312
+  },
+  "longitude_range": {
+    "min": -124.700359,
+    "max": -123.004198
+  }
+}

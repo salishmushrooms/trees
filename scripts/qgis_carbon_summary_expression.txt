@@ -1,0 +1,22 @@
+# QGIS Expression for Carbon Summary
+# Use this in Field Calculator or Label expressions
+
+# Simple version - shows top species only:
+'Total Carbon: ' || round(sum("TOTAL_CARBON_AG", filter:=is_selected())) || 
+'\nDouglas Fir: ' || round(sum("DOUGLAS_FIR_AG_CARBON", filter:=is_selected())) ||
+'\nGrand Fir: ' || round(sum("GRAND_FIR_AG_CARBON", filter:=is_selected())) ||
+'\nWestern Hemlock: ' || round(sum("WESTERN_HEMLOCK_AG_CARBON", filter:=is_selected()))
+
+# Advanced version - formats numbers with commas:
+'Selected Plots: ' || count_selected($currentfeature) ||
+'\nTotal Carbon: ' || format_number(sum("TOTAL_CARBON_AG", filter:=is_selected()), 0) ||
+'\n' ||
+'Douglas Fir: ' || format_number(sum("DOUGLAS_FIR_AG_CARBON", filter:=is_selected()), 0) ||
+' (' || round(100.0 * sum("DOUGLAS_FIR_AG_CARBON", filter:=is_selected()) / sum("TOTAL_CARBON_AG", filter:=is_selected())) || '%)' ||
+'\n' ||
+'Grand Fir: ' || format_number(sum("GRAND_FIR_AG_CARBON", filter:=is_selected()), 0) ||
+' (' || round(100.0 * sum("GRAND_FIR_AG_CARBON", filter:=is_selected()) / sum("TOTAL_CARBON_AG", filter:=is_selected())) || '%)'
+
+# Create a virtual field with carbon density (carbon per hectare):
+sum("TOTAL_CARBON_AG", filter:=is_selected()) / (count_selected($currentfeature) * 0.168)  
+# Note: 0.168 hectares = FIA plot area
