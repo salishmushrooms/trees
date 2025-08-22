@@ -4,6 +4,9 @@
 
 This document provides a reference for navigating and querying the FIA (Forest Inventory and Analysis) database for forest and mushroom habitat modeling. It focuses on key tables, fields, and relationships most relevant for ecological analysis.
 
+Official Documentation Here
+data/raw/FIADB Trees Guide.pdf
+
 **Important Note on Plot Locations**: FIA plot coordinates are **NOT EXACT** due to privacy protection. Coordinates are "fuzzed" (moved up to 0.5-1.0 mile) and up to 20% of private plots are "swapped" with similar plots in the same county to protect landowner privacy.
 
 ## Core Data Tables

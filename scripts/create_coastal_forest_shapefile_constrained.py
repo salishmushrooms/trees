@@ -129,8 +129,8 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
             print(f"Error masking elevation data: {e}")
             return None, None, None, None
         
-        # Apply elevation constraint - remove areas >1000ft
-        elev_data_ft = convert_elevation_to_feet(elev_data)
+        # Apply elevation constraint - remove areas >1000ft (data already in feet)
+        elev_data_ft = elev_data  # Data is already in feet  
         elevation_mask = (elev_data_ft <= MAX_ELEVATION_FT) & (~np.isnan(elev_data_ft))
         
         print(f"Elevation constraint: {np.sum(elevation_mask)} pixels ≤ {MAX_ELEVATION_FT}ft within boundary")

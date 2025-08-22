@@ -1,0 +1,28 @@
+{
+  "bioregion_name": "Eastern Cascades Forest (Species-Based)",
+  "creation_date": "2025-08-02T12:32:04.589554",
+  "method": "species_composition_classification",
+  "parameters": {
+    "min_tree_cover_pct": 20,
+    "buffer_distance_km": 5,
+    "min_plots_for_cluster": 3
+  },
+  "species_criteria": {
+    "primary_indicators": [
+      "ponderosa_pine > 20 kg/ha",
+      "lodgepole_pine > 30 kg/ha",
+      "western_larch > 0 kg/ha",
+      "western_juniper > 10 kg/ha"
+    ],
+    "exclusion_criteria": [
+      "western_hemlock < 50 kg/ha",
+      "pacific_silver_fir < 40 kg/ha",
+      "western_redcedar < 50 kg/ha"
+    ]
+  },
+  "results": {
+    "indicator_plots": 3620,
+    "total_area_sqkm": 75644.57873796338,
+    "polygon_count": 18
+  }
+}

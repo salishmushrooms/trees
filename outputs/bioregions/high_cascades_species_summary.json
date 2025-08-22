@@ -1,0 +1,30 @@
+{
+  "bioregion_name": "High Cascades Forest (Species-Based)",
+  "creation_date": "2025-08-02T12:27:13.899483",
+  "method": "species_composition_classification",
+  "parameters": {
+    "min_tree_cover_pct": 20,
+    "buffer_distance_km": 5,
+    "min_plots_for_cluster": 3
+  },
+  "species_criteria": {
+    "primary_indicators": [
+      "pacific_silver_fir > 30 kg/ha",
+      "subalpine_fir > 30 kg/ha",
+      "mountain_hemlock > 30 kg/ha",
+      "noble_fir > 20 kg/ha",
+      "engelmann_spruce > 20 kg/ha"
+    ],
+    "exclusion_criteria": [
+      "ponderosa_pine < 30 kg/ha",
+      "western_juniper = 0 kg/ha",
+      "western_larch < 50 kg/ha"
+    ],
+    "mixed_criteria": "40% carbon from subalpine species"
+  },
+  "results": {
+    "indicator_plots": 2552,
+    "total_area_sqkm": 79667.62625993967,
+    "polygon_count": 31
+  }
+}

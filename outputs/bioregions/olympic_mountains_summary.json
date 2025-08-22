@@ -1,0 +1,22 @@
+{
+  "bioregion_name": "Olympic Mountains Forest",
+  "creation_date": "2025-07-31T14:36:33.234503",
+  "parameters": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/olympic_mountains_broad.shp",
+    "elevation_range_ft": "500-6000",
+    "min_tree_cover_pct": 30,
+    "output_resolution_m": 120,
+    "min_area_sqkm": 0.08,
+    "simplification_tolerance": 0.0005
+  },
+  "data_sources": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/olympic_mountains_broad.shp",
+    "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
+    "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
+  },
+  "results": {
+    "total_area_sqkm": 11939.628086999192,
+    "polygon_count": 1,
+    "elevation_validation": "See console output for detailed elevation statistics"
+  }
+}

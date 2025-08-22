@@ -9,8 +9,11 @@ bioregion creation workflow.
 Usage:
     python scripts/combine_bioregions.py
 
-Input Files:
-    outputs/bioregions/*_constrained.geojson    # Individual bioregion files
+Input Files (configured in BIOREGION_FILES list):
+    outputs/bioregions/coastal_forest_shapefile_constrained.geojson
+    outputs/bioregions/eastern_cascades_species_based.geojson
+    outputs/bioregions/high_cascades_species_based.geojson
+    outputs/bioregions/olympic_mountains_constrained.geojson
 
 Output Files:
     outputs/bioregions/all_bioregions_combined.geojson    # Combined bioregions
@@ -32,6 +35,51 @@ import shutil
 
 warnings.filterwarnings('ignore')
 
+# =============================================================================
+# BIOREGION FILES CONFIGURATION
+# =============================================================================
+# Add or remove bioregion files to include in the combination process
+# Files should be located in outputs/bioregions/
+# Format: (filename, desired_name) - if desired_name is None, it will be auto-generated
+BIOREGION_FILES = [
+    ('coastal_forest_shapefile_constrained.geojson', 'Coastal Forest'),
+    ('eastern_cascades_species_based.geojson', 'Eastern Cascades'),
+    ('high_cascades_species_based.geojson', 'High Cascades'),
+    ('olympic_mountains_constrained.geojson', 'Olympic Mountains'),
+    # Add new bioregion files here as needed:
+    # ('new_bioregion_constrained.geojson', 'New Bioregion Name'),
+    # ('another_bioregion.geojson', None),  # Will use auto-generated name
+]
+# =============================================================================
+
+def create_display_name(file_path):
+    """Create human-readable display name from bioregion file path"""
+    
+    # Extract base name and remove suffixes
+    base_name = file_path.stem
+    
+    # Remove common suffixes that shouldn't be in the display name
+    suffixes_to_remove = ['_constrained', '_species_based', '_shapefile', '_broad']
+    for suffix in suffixes_to_remove:
+        base_name = base_name.replace(suffix, '')
+    
+    # Define name mappings for better display names
+    name_mappings = {
+        'coastal_forest': 'Coastal Forest',
+        'olympic_mountains': 'Olympic Mountains',
+        'eastern_cascades': 'Eastern Cascades', 
+        'high_cascades': 'High Cascades',
+        'riparian_forest': 'Riparian Forest',
+        'alpine_forest': 'Alpine Forest'
+    }
+    
+    # Return mapped name or formatted version
+    if base_name in name_mappings:
+        return name_mappings[base_name]
+    else:
+        # Fallback: title case with underscores as spaces
+        return base_name.replace('_', ' ').title()
+
 def combine_all_bioregions():
     """
     Automatically combine all bioregion files in the bioregions directory
@@ -47,10 +95,39 @@ def combine_all_bioregions():
     print("=== Combining Pacific Northwest Forest Bioregions ===")
     
     bioregions_dir = Path('outputs/bioregions')
-    bioregion_files = list(bioregions_dir.glob('*_constrained.geojson'))
+    
+    # Build file paths from hardcoded configuration
+    bioregion_files = []
+    missing_files = []
+    
+    for entry in BIOREGION_FILES:
+        # Handle both tuple and string formats for backwards compatibility
+        if isinstance(entry, tuple):
+            filename, desired_name = entry
+        else:
+            filename = entry
+            desired_name = None
+            
+        file_path = bioregions_dir / filename
+        if file_path.exists():
+            bioregion_files.append((file_path, desired_name))
+        else:
+            missing_files.append(filename)
+    
+    if missing_files:
+        print("⚠️  Warning: Some configured files not found:")
+        for missing in missing_files:
+            print(f"   • {missing}")
+        print()
     
     if not bioregion_files:
-        print("❌ No bioregion files found matching pattern '*_constrained.geojson'")
+        print("❌ No bioregion files found from configuration:")
+        for entry in BIOREGION_FILES:
+            if isinstance(entry, tuple):
+                filename, _ = entry
+            else:
+                filename = entry
+            print(f"   • {filename}")
         print(f"   Searched in: {bioregions_dir.absolute()}")
         return
     
@@ -60,27 +137,60 @@ def combine_all_bioregions():
     region_summaries = []
     total_area = 0
     
-    for file_path in bioregion_files:
-        # Extract region name from filename
-        region_name = file_path.stem.replace('_constrained', '')
+    for file_entry in bioregion_files:
+        # Unpack file path and desired name
+        if isinstance(file_entry, tuple):
+            file_path, desired_name = file_entry
+        else:
+            file_path = file_entry
+            desired_name = None
+            
+        # Use hardcoded name if provided, otherwise generate from filename
+        if desired_name:
+            display_name = desired_name
+        else:
+            display_name = create_display_name(file_path)
+            
+        region_code = file_path.stem.replace('_constrained', '').replace('_species_based', '').replace('_shapefile', '')
         
-        print(f"   📄 Loading {region_name}...")
+        print(f"   📄 Loading {display_name} ({region_code})...")
         
         try:
             # Load bioregion
             gdf = gpd.read_file(file_path)
             
             if gdf.empty:
-                print(f"      ⚠️  Warning: {region_name} contains no features")
+                print(f"      ⚠️  Warning: {display_name} contains no features")
                 continue
             
             # Ensure consistent CRS
             if gdf.crs != 'EPSG:4326':
                 gdf = gdf.to_crs('EPSG:4326')
             
+            # Reduce precision for web mapping (~10m precision)
+            print(f"      🔧 Reducing precision to ~10m...")
+            
+            # Simplify geometry (remove unnecessary vertices)
+            tolerance_degrees = 0.0001  # ~10m at mid-latitudes
+            gdf['geometry'] = gdf.geometry.simplify(tolerance_degrees, preserve_topology=True)
+            
+            # Round coordinates to ~10m precision (5 decimal places)
+            from shapely.ops import transform
+            import math
+            
+            def round_coordinates(geom):
+                """Round coordinates to 5 decimal places (~1m precision)"""
+                def round_coords(x, y, z=None):
+                    rounded_x = round(x, 5)
+                    rounded_y = round(y, 5)
+                    return (rounded_x, rounded_y) if z is None else (rounded_x, rounded_y, round(z, 5))
+                return transform(round_coords, geom)
+            
+            gdf['geometry'] = gdf['geometry'].apply(round_coordinates)
+            
             # Add standardized metadata
-            gdf['region_name'] = region_name
-            gdf['region_code'] = region_name.upper().replace('_', '')[:8]  # 8-char code
+            gdf['region_name'] = display_name  # Human-readable name for Mapbox
+            gdf['region_code'] = region_code.upper().replace('_', '')[:8]  # 8-char code
             gdf['source_file'] = file_path.name
             gdf['bioregion_type'] = 'forest_bioregion'
             
@@ -99,11 +209,14 @@ def combine_all_bioregions():
             
             # Store region summary
             region_summary = {
-                'region_name': region_name,
+                'region_name': display_name,
                 'region_code': gdf['region_code'].iloc[0],
                 'source_file': file_path.name,
                 'feature_count': feature_count,
                 'area_km2': float(area_km2),
+                'precision_reduced': True,
+                'simplification_tolerance_degrees': tolerance_degrees,
+                'coordinate_precision_decimal_places': 5,
                 'bounds': {
                     'minx': float(gdf.bounds.minx.min()),
                     'miny': float(gdf.bounds.miny.min()),
@@ -116,7 +229,7 @@ def combine_all_bioregions():
             print(f"      ✅ Loaded {feature_count} features, {area_km2:,.0f} km²")
             
         except Exception as e:
-            print(f"      ❌ Error loading {region_name}: {e}")
+            print(f"      ❌ Error loading {display_name}: {e}")
             continue
     
     if not combined_regions:
@@ -264,8 +377,123 @@ def validate_combined_bioregions(combined_file=None):
         print(f"   ❌ Validation error: {e}")
         return False
 
+def create_bioregions_mbtiles(geojson_file=None, max_zoom=14):
+    """
+    Create Mapbox mbtiles from combined bioregions using Tippecanoe
+    
+    Args:
+        geojson_file: Path to combined bioregions GeoJSON (optional)
+        max_zoom: Maximum zoom level for tiles (default: 14)
+    """
+    
+    if geojson_file is None:
+        geojson_file = Path('outputs/bioregions/all_bioregions_combined.geojson')
+    
+    if not geojson_file.exists():
+        print(f"❌ GeoJSON file not found: {geojson_file}")
+        return None
+    
+    print(f"\n🗺️  Creating Mapbox tiles from bioregions...")
+    
+    # Check if tippecanoe is available
+    if not shutil.which('tippecanoe'):
+        print("❌ Tippecanoe not found. Install with:")
+        print("   brew install tippecanoe")
+        return None
+    
+    # Output path for mbtiles
+    mbtiles_dir = Path('outputs/mapbox_mbtiles')
+    mbtiles_dir.mkdir(exist_ok=True)
+    mbtiles_file = mbtiles_dir / 'pnw_forest_bioregions.mbtiles'
+    
+    # Remove existing mbtiles file if it exists
+    if mbtiles_file.exists():
+        mbtiles_file.unlink()
+        print(f"   🗑️  Removed existing {mbtiles_file.name}")
+    
+    # Tippecanoe command
+    tippecanoe_cmd = [
+        'tippecanoe',
+        '--output', str(mbtiles_file),
+        '--maximum-zoom', str(max_zoom),
+        '--minimum-zoom', '0',
+        '--base-zoom', str(max_zoom),
+        '--force',  # Overwrite existing files
+        '--drop-densest-as-needed',  # Automatically drop features at high zoom levels
+        '--extend-zooms-if-still-dropping',  # Extend zoom levels if needed
+        '--layer', 'bioregions',  # Layer name in the mbtiles
+        '--attribution', 'Pacific Northwest Forest Habitat Mapping Project',
+        '--name', 'PNW Forest Bioregions',
+        '--description', 'Pacific Northwest Forest Bioregions for habitat mapping and species distribution analysis',
+        # Feature properties to include
+        '--include', 'region_name',
+        '--include', 'region_code', 
+        '--include', 'area_km2',
+        '--include', 'bioregion_type',
+        str(geojson_file)
+    ]
+    
+    print(f"   ⚙️  Running tippecanoe...")
+    print(f"      Max zoom: {max_zoom}")
+    print(f"      Output: {mbtiles_file.name}")
+    
+    try:
+        # Run tippecanoe
+        result = subprocess.run(
+            tippecanoe_cmd,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        print(f"   ✅ Successfully created mbtiles file")
+        
+        # Get file size
+        file_size_mb = mbtiles_file.stat().st_size / (1024 * 1024)
+        print(f"      File size: {file_size_mb:.1f} MB")
+        
+        # Update summary with mbtiles info
+        summary_file = geojson_file.parent / 'bioregions_combination_summary.json'
+        if summary_file.exists():
+            with open(summary_file, 'r') as f:
+                summary = json.load(f)
+            
+            summary['output_files']['mbtiles'] = str(mbtiles_file)
+            summary['mbtiles_info'] = {
+                'max_zoom': max_zoom,
+                'layer_name': 'bioregions',
+                'file_size_mb': round(file_size_mb, 1),
+                'created_date': datetime.now().isoformat(),
+                'tippecanoe_version': get_tippecanoe_version()
+            }
+            
+            with open(summary_file, 'w') as f:
+                json.dump(summary, f, indent=2)
+            
+            print(f"   📄 Updated summary with mbtiles info")
+        
+        return mbtiles_file
+        
+    except subprocess.CalledProcessError as e:
+        print(f"   ❌ Tippecanoe failed:")
+        print(f"      Error: {e.stderr}")
+        return None
+    except Exception as e:
+        print(f"   ❌ Error creating mbtiles: {e}")
+        return None
+
+def get_tippecanoe_version():
+    """Get tippecanoe version for metadata"""
+    try:
+        result = subprocess.run(['tippecanoe', '--version'], capture_output=True, text=True)
+        return result.stdout.strip()
+    except:
+        return "unknown"
+
 def main():
-    """Main function to run bioregion combination process"""
+    """Main function to run bioregion combination and mbtiles creation process"""
+    
+    print("=== Pacific Northwest Forest Bioregions Processing ===")
     
     # Run combination
     result = combine_all_bioregions()
@@ -274,12 +502,33 @@ def main():
         output_path, summary_path = result
         
         # Run validation
-        validate_combined_bioregions(output_path)
+        is_valid = validate_combined_bioregions(output_path)
         
-        print(f"\n🚀 Ready for use!")
-        print(f"   Load in QGIS: {output_path}")
-        print(f"   Web mapping: Use region_name field for styling")
-        print(f"   Analysis: Join with species data using region_code")
+        if is_valid:
+            # Create mbtiles
+            mbtiles_path = create_bioregions_mbtiles(output_path, max_zoom=14)
+            
+            print(f"\n🎉 Processing complete!")
+            print(f"   📄 GeoJSON: {output_path.name}")
+            if mbtiles_path:
+                print(f"   🗺️  MBTiles: {mbtiles_path.name}")
+                print(f"   📤 Upload to Mapbox Studio: {mbtiles_path}")
+            print(f"   📊 Summary: {summary_path.name}")
+            
+            print(f"\n🚀 Ready for use!")
+            print(f"   Load in QGIS: {output_path}")
+            print(f"   Web mapping: Use region_name field for styling")
+            print(f"   Analysis: Join with species data using region_code")
+            
+            if mbtiles_path:
+                print(f"\n📱 Mapbox Integration:")
+                print(f"   1. Upload {mbtiles_path.name} to Mapbox Studio")
+                print(f"   2. Create style with 'bioregions' layer")
+                print(f"   3. Use region_name property for styling:")
+                print(f"      - 'Coastal Forest', 'Olympic Mountains', 'Eastern Cascades', 'High Cascades'")
+                print(f"   4. Geometry simplified to ~10m precision for web performance")
+        else:
+            print(f"\n⚠️  Validation failed - skipping mbtiles creation")
     
     else:
         print(f"\n❌ Combination process failed")

@@ -4,31 +4,82 @@
     "version": "1.0",
     "description": "Combined forest bioregions for habitat mapping and species distribution analysis",
     "coordinate_system": "EPSG:4326 (WGS84)",
-    "created_date": "2025-07-29T13:51:28.526392"
+    "created_date": "2025-08-03T08:48:31.076329"
   },
   "summary_statistics": {
-    "total_regions": 1,
-    "total_features": 1,
-    "total_area_km2": 9010.98799199996,
+    "total_regions": 4,
+    "total_features": 51,
+    "total_area_km2": 181570.37100733534,
     "combined_bounds": {
       "minx": -124.754,
       "miny": 41.624,
-      "maxx": -123.25,
-      "maxy": 48.395
+      "maxx": -119.56035,
+      "maxy": 49.04459
     }
   },
   "individual_regions": [
     {
-      "region_name": "coastal_forest_shapefile",
+      "region_name": "Coastal Forest",
       "region_code": "COASTALF",
       "source_file": "coastal_forest_shapefile_constrained.geojson",
       "feature_count": 1,
-      "area_km2": 9010.98799199996,
+      "area_km2": 14320.316348999871,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.0001,
+      "coordinate_precision_decimal_places": 5,
       "bounds": {
         "minx": -124.754,
         "miny": 41.624,
-        "maxx": -123.25,
+        "maxx": -123.489,
         "maxy": 48.395
+      }
+    },
+    {
+      "region_name": "Eastern Cascades",
+      "region_code": "EASTERNC",
+      "source_file": "eastern_cascades_species_based.geojson",
+      "feature_count": 18,
+      "area_km2": 75643.86362647355,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.0001,
+      "coordinate_precision_decimal_places": 5,
+      "bounds": {
+        "minx": -122.55389,
+        "miny": 41.95277,
+        "maxx": -119.56035,
+        "maxy": 49.04459
+      }
+    },
+    {
+      "region_name": "High Cascades",
+      "region_code": "HIGHCASC",
+      "source_file": "high_cascades_species_based.geojson",
+      "feature_count": 31,
+      "area_km2": 79666.56294486258,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.0001,
+      "coordinate_precision_decimal_places": 5,
+      "bounds": {
+        "minx": -123.54552,
+        "miny": 41.96053,
+        "maxx": -119.72001,
+        "maxy": 49.04417
+      }
+    },
+    {
+      "region_name": "Olympic Mountains",
+      "region_code": "OLYMPICM",
+      "source_file": "olympic_mountains_constrained.geojson",
+      "feature_count": 1,
+      "area_km2": 11939.628086999326,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.0001,
+      "coordinate_precision_decimal_places": 5,
+      "bounds": {
+        "minx": -124.719,
+        "miny": 47.203,
+        "maxx": -122.823,
+        "maxy": 48.386
       }
     }
   ],
@@ -45,8 +96,8 @@
   "mbtiles_info": {
     "max_zoom": 14,
     "layer_name": "bioregions",
-    "file_size_mb": 3.9,
-    "created_date": "2025-07-29T13:51:33.337627",
+    "file_size_mb": 12.1,
+    "created_date": "2025-08-03T08:48:40.058757",
     "tippecanoe_version": ""
   }
 }

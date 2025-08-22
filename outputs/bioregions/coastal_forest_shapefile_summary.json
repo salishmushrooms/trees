@@ -17,9 +17,9 @@
   "validation": {
     "total_shore_pine_plots": 5017,
     "coastal_shore_pine_plots": 120,
-    "plots_captured_by_bioregion": 32,
-    "capture_rate": 0.26666666666666666,
+    "plots_captured_by_bioregion": 36,
+    "capture_rate": 0.3,
     "validation_success": false
   },
-  "created": "2025-07-29T12:09:04.962785"
+  "created": "2025-07-31T15:04:10.319083"
 }

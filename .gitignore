@@ -1,13 +1,24 @@
 # Large data files
 *.db
 *.tif
+*.bil
+*.mbtiles
+*.gpkg
+*.geojson
+
+# Exclude specific large geojson files we want to keep
+!outputs/bioregions/*.geojson
+!docs/*.geojson
 
 # Large data directories
 data/raw/hydrography/
 data/raw/PNW\ Forest\ Inventory/
-data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.bil
-data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.stx
-data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/*.aux.xml
+data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/
+data/raw/PRISM_ppt_30yr_normal_800mM4_all_bil/
+outputs/mapbox_masks/
+outputs/species_distribution/
+outputs/climate/
+comprehensive_forest_data_*.geojson
 
 # Cache and temporary files
 cache/

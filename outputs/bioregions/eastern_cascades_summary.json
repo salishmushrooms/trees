@@ -1,0 +1,22 @@
+{
+  "bioregion_name": "Eastern Cascades Forest",
+  "creation_date": "2025-07-31T16:45:01.993239",
+  "parameters": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/eastern_cascades_broad.shp",
+    "elevation_range_ft": "0-3500",
+    "min_tree_cover_pct": 20,
+    "output_resolution_m": 120,
+    "min_area_sqkm": 0.08,
+    "simplification_tolerance": 0.0005
+  },
+  "data_sources": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/eastern_cascades_broad.shp",
+    "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
+    "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
+  },
+  "results": {
+    "total_area_sqkm": 15370.176437999715,
+    "polygon_count": 1,
+    "elevation_validation": "See console output for detailed elevation statistics"
+  }
+}

@@ -9,6 +9,14 @@ This is a **Pacific Northwest Forest Habitat Mapping Project** that uses FIA (Fo
 ## The Team
 I am a single developer working as part of a single person company. I prefer simple methods for achieving our goals and want to avoid overengineering or creating complicated solutions with many configuration options that would be unlikely to be used.
 
+We will use this directory to coordinate communications among our related projects
+/Users/JJC/communications/tree-climate-mushroom
+
+## Simplify when possible
+Coordinates may use a precision of 10m max unless stated otherwise
+Mass, area, volume may be in whole numbers
+Simplify vectors where possible but ask when level of optimal simplification is ambiguous
+
 ## Core Architecture
 
 ### Data Pipeline Structure
@@ -209,3 +217,4 @@ import scipy
 - `docs/FIA_DATABASE_STRUCTURE_REFERENCE.md`: Database schema and query guide
 - `docs/PNW_SPECIES_REFERENCE.md`: Complete species codes and query examples
 - `MAPBOX_MBTILES_README.md`: Mapbox tile generation and upload instructions
+

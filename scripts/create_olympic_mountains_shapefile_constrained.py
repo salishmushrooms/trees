@@ -1,0 +1,503 @@
+#!/usr/bin/env python3
+"""
+Create Olympic Mountains Forest Bioregion using Shapefile Boundary + Raster Constraints
+
+This script creates an Olympic Mountains forest bioregion by:
+1. Loading user-defined Olympic boundary shapefile as base area
+2. Applying elevation constraints (1000-6000ft) within the boundary
+3. Applying tree cover constraints (≥30%) within the boundary
+4. Creating natural boundaries following topography and forest coverage
+5. Generating output suitable for Mapbox integration
+
+Adapted from coastal forest bioregion implementation for montane forests.
+"""
+
+import geopandas as gpd
+import pandas as pd
+import numpy as np
+from shapely.geometry import Point, Polygon, MultiPolygon
+from shapely.ops import unary_union
+import rasterio
+from rasterio.mask import mask
+from rasterio.features import shapes
+from rasterio.warp import calculate_default_transform, reproject, Resampling
+import warnings
+from pathlib import Path
+from tqdm import tqdm
+import json
+
+warnings.filterwarnings('ignore')
+
+# Configuration - Olympic Mountains Forest Bioregion Parameters
+MIN_ELEVATION_FT = 500       # Exclude coastal/lowland areas
+MAX_ELEVATION_FT = 6000       # Exclude alpine/subalpine peaks
+MIN_TREE_COVER_PCT = 30       # Denser forest requirement for montane
+OUTPUT_RESOLUTION = 120       # Match elevation data resolution
+
+# File paths
+BASE_BOUNDARY_SHP = "/Users/JJC/trees/outputs/bioregions/olympic_mountains_broad.shp"
+ELEVATION_RASTER = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
+TREE_COVER_RASTER = "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
+OUTPUT_DIR = Path("outputs/bioregions")
+
+def convert_elevation_to_feet(elevation_meters):
+    """Convert elevation from meters to feet"""
+    return elevation_meters * 3.28084
+
+def load_base_boundary():
+    """Load and validate the base boundary shapefile"""
+    print(f"Loading base boundary from {BASE_BOUNDARY_SHP}")
+    
+    if not Path(BASE_BOUNDARY_SHP).exists():
+        print(f"Error: Base boundary shapefile not found: {BASE_BOUNDARY_SHP}")
+        return None
+    
+    boundary = gpd.read_file(BASE_BOUNDARY_SHP)
+    
+    print(f"Loaded boundary with {len(boundary)} features")
+    print(f"Columns: {list(boundary.columns)}")
+    print(f"CRS: {boundary.crs}")
+    
+    # Ensure proper CRS
+    if boundary.crs != 'EPSG:4326':
+        print(f"Converting boundary from {boundary.crs} to EPSG:4326")
+        boundary = boundary.to_crs('EPSG:4326')
+    
+    # Validate geometry
+    boundary_gdf = boundary.copy()
+    
+    # Ensure we have valid, non-empty geometries
+    valid_geoms = boundary_gdf[boundary_gdf.geometry.is_valid & ~boundary_gdf.geometry.is_empty]
+    
+    if len(valid_geoms) < len(boundary_gdf):
+        print(f"Warning: Removed {len(boundary_gdf) - len(valid_geoms)} invalid geometries")
+        boundary_gdf = valid_geoms
+    
+    # Merge all features into single boundary
+    if len(boundary_gdf) > 1:
+        try:
+            merged_boundary = unary_union(boundary_gdf.geometry)
+            boundary_gdf = gpd.GeoDataFrame([{'boundary': 1}], geometry=[merged_boundary], crs='EPSG:4326')
+            print("Merged multiple features into single boundary")
+        except Exception as e:
+            print(f"Warning: Could not merge features: {e}")
+    
+    # Calculate area
+    area_sqkm = boundary_gdf.geometry.area.sum() * 111 * 111  # Approximate conversion
+    print(f"Base boundary area: {area_sqkm:.0f} km²")
+    
+    # Print bounds for reference
+    bounds = boundary_gdf.total_bounds
+    print(f"Boundary extent: {bounds[0]:.3f}, {bounds[1]:.3f} to {bounds[2]:.3f}, {bounds[3]:.3f}")
+    
+    return boundary_gdf
+
+def apply_raster_constraints_within_boundary(boundary_gdf):
+    """Apply elevation and tree cover constraints within the boundary"""
+    print("=== Applying Raster Constraints Within Boundary ===")
+    
+    # Get boundary geometry for masking
+    boundary_geom = boundary_gdf.geometry.iloc[0]
+    
+    # Buffer inward slightly to avoid edge artifacts
+    boundary_geom = boundary_geom.buffer(-0.006)  # ~600m inward buffer in degrees  
+    print("Applied 600m inward buffer to avoid edge artifacts")
+    
+    # Step 1: Load and process elevation data
+    print(f"Loading elevation data from {ELEVATION_RASTER}")
+    with rasterio.open(ELEVATION_RASTER) as elev_src:
+        # Mask elevation data to boundary
+        try:
+            elev_masked, elev_transform = mask(elev_src, [boundary_geom], crop=True, nodata=elev_src.nodata)
+            elev_data = elev_masked[0]  # Get first band
+            elev_crs = elev_src.crs
+            elev_profile = elev_src.profile.copy()
+            elev_profile.update({
+                'height': elev_data.shape[0],
+                'width': elev_data.shape[1],
+                'transform': elev_transform
+            })
+        except Exception as e:
+            print(f"Error masking elevation data: {e}")
+            return None, None, None, None
+        
+        # Apply elevation constraint - Olympic Mountains range (data already in feet)
+        elev_data_ft = elev_data  # Data is already in feet
+        elevation_mask = (elev_data_ft >= MIN_ELEVATION_FT) & (elev_data_ft <= MAX_ELEVATION_FT) & (~np.isnan(elev_data_ft))
+        
+        print(f"Elevation constraint: {np.sum(elevation_mask)} pixels between {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}ft")
+        
+        # Debug: Check elevation values where mask is True
+        if np.sum(elevation_mask) > 0:
+            valid_elevations = elev_data_ft[elevation_mask]
+            print(f"Elevation range in kept pixels: {np.min(valid_elevations):.1f}ft to {np.max(valid_elevations):.1f}ft")
+    
+    # Step 2: Load and resample tree cover data to match elevation grid
+    print(f"Loading tree cover data from {TREE_COVER_RASTER}")
+    tcc_path = Path(TREE_COVER_RASTER)
+    
+    with rasterio.open(tcc_path) as tcc_src:
+        try:
+            # Mask tree cover data to the same extent as elevation
+            if tcc_src.shape == elev_data.shape and tcc_src.transform == elev_transform:
+                print("Using matching resolution tree cover data")
+                tcc_masked, _ = mask(tcc_src, [boundary_geom], crop=True, nodata=tcc_src.nodata)
+                tcc_data = tcc_masked[0]
+            else:
+                print("Resampling tree cover to match elevation grid...")
+                # Initialize with NaN to ensure NoData areas are properly handled
+                tcc_data = np.full_like(elev_data, np.nan, dtype=np.float32)
+                
+                # First mask the tree cover to boundary
+                tcc_masked, tcc_transform = mask(tcc_src, [boundary_geom], crop=True, nodata=tcc_src.nodata)
+                
+                # Then resample to elevation grid
+                reproject(
+                    source=tcc_masked,
+                    destination=tcc_data,
+                    src_transform=tcc_transform,
+                    src_crs=tcc_src.crs,
+                    dst_transform=elev_transform, 
+                    dst_crs=elev_crs,
+                    resampling=Resampling.average,
+                    dst_nodata=np.nan
+                )
+        except Exception as e:
+            print(f"Error processing tree cover data: {e}")
+            return None, None, None, None
+        
+        # Apply tree cover constraint
+        valid_tcc_mask = ~np.isnan(tcc_data)
+        tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & valid_tcc_mask
+        print(f"Tree cover constraint: {np.sum(tree_cover_mask)} pixels ≥ {MIN_TREE_COVER_PCT}% within boundary")
+        print(f"Excluding {np.sum(~valid_tcc_mask)} pixels with NoData (likely water/non-land areas)")
+    
+    # Step 3: Combine constraints
+    print("Combining elevation and tree cover constraints...")
+    olympic_forest_mask = elevation_mask & tree_cover_mask
+    
+    print(f"Final Olympic Mountains forest mask: {np.sum(olympic_forest_mask)} pixels")
+    print(f"Approximate area: {np.sum(olympic_forest_mask) * (OUTPUT_RESOLUTION**2) / 1000000:.0f} km²")
+    
+    return olympic_forest_mask, elev_transform, elev_crs, elev_profile
+
+def raster_to_polygons_optimized(mask_array, transform, crs):
+    """Convert raster mask to vector polygons with optimized processing"""
+    print("Converting raster mask to vector polygons...")
+    
+    # Convert boolean mask to uint8
+    mask_uint8 = mask_array.astype(np.uint8)
+    
+    # Extract polygons
+    from shapely.geometry import shape
+    polygons = []
+    for geom, value in shapes(mask_uint8, mask=mask_uint8, transform=transform):
+        if value == 1:  # Only keep forest pixels
+            # Convert dict to shapely geometry
+            poly = shape(geom)
+            # Basic validity check
+            if poly.is_valid and poly.area > 0:
+                polygons.append(poly)
+    
+    print(f"Extracted {len(polygons)} valid polygon features")
+    
+    if not polygons:
+        print("Warning: No polygons extracted from mask")
+        return gpd.GeoDataFrame()
+    
+    # Create GeoDataFrame
+    gdf = gpd.GeoDataFrame(
+        [{'olympic_forest': 1} for _ in polygons],
+        geometry=polygons,
+        crs=crs
+    )
+    
+    return gdf
+
+def remove_offshore_bands_and_simplify(gdf, min_area_sqkm=0.08, max_perimeter_area_ratio=None):
+    """Remove thin offshore bands and simplify geometry"""
+    print(f"Removing artifacts and simplifying (min_area={min_area_sqkm}km², max_P/A_ratio={max_perimeter_area_ratio})...")
+    
+    if gdf.empty:
+        return gdf
+    
+    # Convert to geographic CRS for area calculation
+    gdf_geo = gdf.to_crs('EPSG:4326')
+    
+    # Skip water exclusion for now
+    print("Skipping water exclusion")
+    
+    # Calculate areas and perimeters in km first
+    gdf_geo['area_sqkm'] = gdf_geo.geometry.area * 111 * 111  # Approximate conversion
+    gdf_geo['perimeter_km'] = gdf_geo.geometry.length * 111   # Approximate conversion
+    
+    # Remove isolated single pixels (likely edge artifacts)
+    print("Removing isolated single-pixel artifacts...")
+    pixel_area_km2 = (120 * 120) / 1000000  # 120m pixels in km²
+    single_pixel_threshold = pixel_area_km2 * 1.5  # Remove anything smaller than 1.5 pixels
+    
+    isolated_mask = gdf_geo['area_sqkm'] < single_pixel_threshold
+    isolated_count = isolated_mask.sum()
+    if isolated_count > 0:
+        gdf_geo = gdf_geo[~isolated_mask]
+        print(f"Removed {isolated_count} isolated single-pixel polygons")
+    
+    # Remove rectangular edge artifacts (thin strips along boundaries)
+    print("Removing rectangular edge artifacts...")
+    # Calculate bounding box dimensions for each polygon
+    bounds = gdf_geo.bounds
+    gdf_geo['bbox_width'] = (bounds['maxx'] - bounds['minx']) * 111000  # Convert to meters
+    gdf_geo['bbox_height'] = (bounds['maxy'] - bounds['miny']) * 111000  # Convert to meters
+    gdf_geo['aspect_ratio'] = gdf_geo[['bbox_width', 'bbox_height']].max(axis=1) / gdf_geo[['bbox_width', 'bbox_height']].min(axis=1)
+    
+    # Remove thin rectangular strips (high aspect ratio + one dimension ~pixel size)
+    min_dimension = gdf_geo[['bbox_width', 'bbox_height']].min(axis=1)
+    is_thin_strip = (gdf_geo['aspect_ratio'] > 10) & (min_dimension < 150)  # <150m width and >10:1 ratio
+    
+    strip_count = is_thin_strip.sum()
+    if strip_count > 0:
+        gdf_geo = gdf_geo[~is_thin_strip]
+        print(f"Removed {strip_count} thin rectangular edge artifacts")
+    gdf_geo['perimeter_area_ratio'] = gdf_geo['perimeter_km'] / gdf_geo['area_sqkm']
+    
+    # Filter by minimum area
+    large_polygons = gdf_geo[gdf_geo['area_sqkm'] >= min_area_sqkm]
+    print(f"After area filter: {len(large_polygons)} polygons ≥ {min_area_sqkm}km²")
+    
+    if large_polygons.empty:
+        print("Warning: No polygons meet minimum area requirement")
+        return gdf_geo
+    
+    # Skip perimeter-to-area ratio filter for now
+    if max_perimeter_area_ratio is not None:
+        compact_polygons = large_polygons[large_polygons['perimeter_area_ratio'] <= max_perimeter_area_ratio]
+        print(f"After compactness filter: {len(compact_polygons)} polygons with P/A ratio ≤ {max_perimeter_area_ratio}")
+        
+        if compact_polygons.empty:
+            print("Warning: No polygons meet compactness requirement, using area-filtered polygons")
+            compact_polygons = large_polygons
+    else:
+        compact_polygons = large_polygons
+        print("Skipping perimeter/area ratio filter - keeping all polygons above minimum area")
+    
+    # Simplify geometry for web use - reduced for less blocky appearance
+    tolerance = 0.0005  # ~50m simplification (was 0.002/200m)
+    compact_polygons['geometry'] = compact_polygons.geometry.simplify(tolerance)
+    
+    # Try to merge polygons
+    try:
+        merged_geometry = unary_union(compact_polygons.geometry)
+        print("Successfully merged polygons")
+    except Exception as e:
+        print(f"Warning: Error merging polygons: {e}")
+        print("Using MultiPolygon of individual features")
+        from shapely.geometry import MultiPolygon
+        valid_polygons = [geom for geom in compact_polygons.geometry if geom.is_valid]
+        merged_geometry = MultiPolygon(valid_polygons) if len(valid_polygons) > 1 else valid_polygons[0]
+    
+    # Calculate final area
+    total_area = compact_polygons.geometry.area.sum() * 111 * 111  # km²
+    
+    # Create final GeoDataFrame
+    olympic_bioregion = gpd.GeoDataFrame(
+        [{
+            'region_name': 'Olympic Mountains Forest',
+            'region_code': 'olympic_mountains',
+            'description': f'Olympic Mountains forest {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}ft elevation with ≥{MIN_TREE_COVER_PCT}% tree cover',
+            'elevation_min_ft': MIN_ELEVATION_FT,
+            'elevation_max_ft': MAX_ELEVATION_FT,
+            'min_tree_cover_pct': MIN_TREE_COVER_PCT,
+            'area_sqkm': total_area,
+            'created_date': pd.Timestamp.now().isoformat(),
+            'source_boundary': BASE_BOUNDARY_SHP
+        }],
+        geometry=[merged_geometry],
+        crs='EPSG:4326'
+    )
+    
+    return olympic_bioregion
+
+def validate_bioregion_elevations(bioregion_gdf, original_boundary_gdf):
+    """Sample and validate elevations within the created bioregion"""
+    
+    print("Sampling elevations within bioregion to validate elevation constraints...")
+    
+    # Load elevation raster
+    with rasterio.open(ELEVATION_RASTER) as elev_src:
+        # Sample elevations at regular intervals across the bioregion
+        sample_points = []
+        sample_elevations = []
+        
+        # Create a regular grid of sample points
+        bounds = bioregion_gdf.total_bounds
+        x_points = np.linspace(bounds[0], bounds[2], 50)
+        y_points = np.linspace(bounds[1], bounds[3], 50)
+        
+        # Sample within the bioregion geometry
+        bioregion_geom = bioregion_gdf.geometry.iloc[0]
+        
+        for x in x_points:
+            for y in y_points:
+                point = Point(x, y)
+                if bioregion_geom.contains(point):
+                    # Transform point to raster CRS
+                    lon, lat = x, y
+                    
+                    # Sample elevation at this point
+                    row, col = elev_src.index(lon, lat)
+                    
+                    try:
+                        elev_ft = elev_src.read(1)[row, col]  # Data already in feet
+                        if not np.isnan(elev_ft):
+                            sample_points.append(point)
+                            sample_elevations.append(elev_ft)
+                    except IndexError:
+                        continue
+        
+        print(f"Collected {len(sample_elevations)} elevation samples within bioregion")
+        
+        if sample_elevations:
+            elevations = np.array(sample_elevations)
+            
+            # Calculate statistics
+            print(f"\nElevation Statistics (feet):")
+            print(f"  Minimum: {np.min(elevations):.0f} ft")
+            print(f"  Maximum: {np.max(elevations):.0f} ft")
+            print(f"  Mean: {np.mean(elevations):.0f} ft")
+            print(f"  Median: {np.median(elevations):.0f} ft")
+            print(f"  Std Dev: {np.std(elevations):.0f} ft")
+            
+            # Elevation distribution by bins
+            print(f"\nElevation Distribution:")
+            bins = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 10000]
+            hist, bin_edges = np.histogram(elevations, bins=bins)
+            
+            for i in range(len(hist)):
+                if hist[i] > 0:
+                    pct = hist[i] / len(elevations) * 100
+                    print(f"  {bin_edges[i]:.0f}-{bin_edges[i+1]:.0f} ft: {hist[i]} samples ({pct:.1f}%)")
+            
+            # Check how many samples fall within expected range
+            within_range = np.sum((elevations >= MIN_ELEVATION_FT) & (elevations <= MAX_ELEVATION_FT))
+            within_pct = within_range / len(elevations) * 100
+            
+            print(f"\nConstraint Validation:")
+            print(f"  Samples within {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT} ft: {within_range}/{len(elevations)} ({within_pct:.1f}%)")
+            
+            if within_pct < 90:
+                print(f"  ⚠️  WARNING: Only {within_pct:.1f}% of samples fall within expected elevation range!")
+                print(f"     This suggests the bioregion may be capturing unexpected elevation zones.")
+            else:
+                print(f"  ✅ {within_pct:.1f}% of samples fall within expected elevation range")
+            
+            # Also sample the original boundary for comparison
+            print(f"\n--- Original Boundary Elevation Comparison ---")
+            boundary_geom = original_boundary_gdf.geometry.iloc[0]
+            boundary_elevations = []
+            
+            for x in x_points[::2]:  # Sample less densely
+                for y in y_points[::2]:
+                    point = Point(x, y)
+                    if boundary_geom.contains(point):
+                        lon, lat = x, y
+                        row, col = elev_src.index(lon, lat)
+                        
+                        try:
+                            elev_ft = elev_src.read(1)[row, col]  # Data already in feet
+                            if not np.isnan(elev_ft):
+                                boundary_elevations.append(elev_ft)
+                        except IndexError:
+                            continue
+            
+            if boundary_elevations:
+                boundary_elevations = np.array(boundary_elevations)
+                print(f"Original boundary elevation range: {np.min(boundary_elevations):.0f}-{np.max(boundary_elevations):.0f} ft")
+                print(f"Original boundary mean elevation: {np.mean(boundary_elevations):.0f} ft")
+                
+                # Show what was excluded
+                excluded_low = np.sum(boundary_elevations < MIN_ELEVATION_FT) / len(boundary_elevations) * 100
+                excluded_high = np.sum(boundary_elevations > MAX_ELEVATION_FT) / len(boundary_elevations) * 100
+                print(f"Excluded from original: {excluded_low:.1f}% below {MIN_ELEVATION_FT}ft, {excluded_high:.1f}% above {MAX_ELEVATION_FT}ft")
+        
+        else:
+            print("⚠️  No elevation samples collected - unable to validate")
+
+def main():
+    """Main processing function"""
+    print("=== Creating Olympic Mountains Forest Bioregion (Shapefile + Raster Constraints) ===")
+    
+    # Load base boundary
+    boundary = load_base_boundary()
+    if boundary is None:
+        print("Failed to load base boundary")
+        return
+    
+    # Apply raster constraints
+    forest_mask, transform, crs, _ = apply_raster_constraints_within_boundary(boundary)
+    if forest_mask is None:
+        print("Failed to apply raster constraints")
+        return
+    
+    # Convert to polygons
+    olympic_polygons = raster_to_polygons_optimized(forest_mask, transform, crs)
+    
+    if olympic_polygons.empty:
+        print("No forest polygons extracted")
+        return
+    
+    # Clean up and simplify
+    olympic_bioregion = remove_offshore_bands_and_simplify(olympic_polygons)
+    
+    if olympic_bioregion.empty:
+        print("No polygons remain after filtering")
+        return
+    
+    # Elevation validation for Olympic Mountains
+    print("\n=== Elevation Validation for Olympic Mountains Bioregion ===")
+    validate_bioregion_elevations(olympic_bioregion, boundary)
+    
+    # Save outputs
+    output_file = OUTPUT_DIR / "olympic_mountains_constrained.geojson"
+    summary_file = OUTPUT_DIR / "olympic_mountains_summary.json"
+    
+    print(f"\nSaving Olympic Mountains forest bioregion to {output_file}")
+    olympic_bioregion.to_file(output_file, driver='GeoJSON')
+    
+    # Create summary
+    summary = {
+        'bioregion_name': 'Olympic Mountains Forest',
+        'creation_date': pd.Timestamp.now().isoformat(),
+        'parameters': {
+            'base_boundary': BASE_BOUNDARY_SHP,
+            'elevation_range_ft': f"{MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}",
+            'min_tree_cover_pct': MIN_TREE_COVER_PCT,
+            'output_resolution_m': OUTPUT_RESOLUTION,
+            'min_area_sqkm': 0.08,
+            'simplification_tolerance': 0.0005
+        },
+        'data_sources': {
+            'base_boundary': BASE_BOUNDARY_SHP,
+            'elevation': ELEVATION_RASTER,
+            'tree_cover': TREE_COVER_RASTER
+        },
+        'results': {
+            'total_area_sqkm': float(olympic_bioregion.area_sqkm.iloc[0]),
+            'polygon_count': len(olympic_bioregion),
+            'elevation_validation': 'See console output for detailed elevation statistics'
+        }
+    }
+    
+    with open(summary_file, 'w') as f:
+        json.dump(summary, f, indent=2)
+    
+    print(f"\n=== Final Summary ===")
+    print(f"Olympic Mountains forest bioregion area: {olympic_bioregion.area_sqkm.iloc[0]:.0f} km²")
+    print(f"Elevation range: {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}ft")
+    print(f"Minimum tree cover: {MIN_TREE_COVER_PCT}%")
+    
+    print(f"\n✅ Olympic Mountains forest bioregion created successfully!")
+    print(f"   Output: {output_file}")
+    print(f"   Summary: {summary_file}")
+
+if __name__ == "__main__":
+    main()
