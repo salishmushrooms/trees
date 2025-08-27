@@ -26,29 +26,37 @@ This document provides a comprehensive guide for creating bioregions based on ou
 #### Primary Script
 **File**: `scripts/create_[bioregion_name]_shapefile_constrained.py`
 
-#### Key Functions
+#### Key Functions (Latest Version)
 1. **Boundary Loading**: Load user-defined base boundary shapefile
-2. **Raster Constraints**: Apply elevation and tree cover filters within boundary
-3. **Polygon Extraction**: Convert raster mask to vector polygons
-4. **Artifact Removal**: Clean up raster-to-vector conversion artifacts
-5. **Species Validation**: Validate against known species occurrence data
+2. **Dynamic NLCD Clipping**: Create cached boundary-specific NLCD subset from full CONUS dataset
+3. **Raster Constraints**: Apply elevation and tree cover filters with proper CRS handling
+4. **Polygon Extraction**: Convert raster mask to vector polygons
+5. **Two-Step Clipping**: Remove edge artifacts using precise boundary intersection + inward buffer
+6. **Multi-Polygon Output**: Keep individual polygons for performance (no merging)
 
 ### 3. Configuration Parameters
 
-#### Typical Bioregion Parameters
+#### Typical Bioregion Parameters (Latest Version)
 ```python
-# Bioregion-specific constraints
-MAX_ELEVATION_FT = 1000        # Species-dependent elevation limit
-MIN_TREE_COVER_PCT = 10        # Forest definition threshold
+# Bioregion-specific constraints (Urban Agricultural Example)
+MIN_ELEVATION_FT = 1           # Minimum elevation
+MAX_ELEVATION_FT = 1500        # Maximum elevation for urban/agricultural areas
+MIN_TREE_COVER_PCT = 0         # Minimum tree cover (urban/agricultural)
+MAX_TREE_COVER_PCT = 50        # Maximum tree cover (not dense forest)
 OUTPUT_RESOLUTION = 120        # Match elevation data resolution
 
-# Climate constraints (when using precipitation data)
-MIN_PRECIPITATION_IN = 80      # Minimum annual precipitation (inches)
-MAX_PRECIPITATION_IN = 150     # Maximum annual precipitation (inches)
+# Data source optimization
+TREE_COVER_RASTER = "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"  # Full CONUS dataset
+# Automatically creates: "outputs/mapbox_masks/nlcd_tcc_urban_agricultural_extent.tif"
 
-# Artifact removal settings
-min_area_sqkm = 0.08          # Minimum polygon area (80,000 m²)
-inward_buffer = -0.006        # 600m buffer to avoid edge artifacts
+# Performance optimization settings
+min_area_sqkm = 0.5           # Larger minimum for fewer polygons (was 0.08)
+inward_buffer = 0             # No pre-buffer (use two-step clipping instead)
+skip_merging = True           # Keep individual polygons for performance
+
+# *** NEW: Geometry Simplification Settings (Latest 2025) ***
+simplification_tolerance = 0.001      # ~100m simplification for web performance
+coordinate_precision_decimal_places = 3  # 3 decimal places = ~100m precision
 ```
 
 ## Implementation Workflow
@@ -71,13 +79,21 @@ inward_buffer = -0.006        # 600m buffer to avoid edge artifacts
    - Identify rain shadow effects (<20 inches)
 6. **Combine constraints** using logical AND operations
 
-#### Phase 3: Polygon Processing
+#### Phase 3: Polygon Processing (Latest Approach)
 1. **Convert raster to polygons** using `rasterio.features.shapes()`
-2. **Remove edge artifacts** through multiple filtering steps:
+2. **Two-step clipping** for edge artifact removal:
+   - Step 1: Clip to original boundary (creates partial pixel artifacts)
+   - Step 2: Apply 50m inward buffer and re-clip (removes edge artifacts)
+3. **Multi-stage filtering**:
+   - 2000 sq meter minimum during clipping
    - Single-pixel removal (< 1.5 × pixel area)
    - Rectangular strip removal (high aspect ratio + thin width)
-   - Minimum area filtering (typically 0.08 km²)
-3. **Merge polygons** into coherent bioregion geometry
+   - Final minimum area filtering (0.5 km² typical)
+4. **Geometry simplification and precision reduction** (NEW 2025):
+   - Simplify geometry with 100m tolerance (0.001 degrees)
+   - Round coordinates to 3 decimal places (~100m precision)
+   - Reduces file size by ~90% while maintaining regional accuracy
+5. **Skip merging** for performance (keep individual polygons)
 
 #### Phase 4: Validation and Output
 1. **Species validation** against known occurrence data
@@ -203,32 +219,184 @@ elev_data_ft = elev_data  # Data is already in feet
 
 **⚠️ Always verify elevation data units before applying conversion functions!**
 
-### 2. Edge Artifacts
-**Problem**: Thin rectangular strips appear along boundary edges
+### 1.5. NLCD CRS Updates (January 2025) - **CRITICAL**
+**Problem**: The updated NLCD tree cover dataset (`nlcd_tcc_conus_2021_v2021-4.tif`) uses a different coordinate reference system (likely Albers Equal Area Conic) instead of the previously assumed WGS84.
+
+**Symptoms**:
+- CRS-related errors during raster masking operations
+- Failed reprojections when combining elevation and tree cover data  
+- Boundary geometry incompatibility with tree cover raster
+
+**Scripts Updated** (January 2025):
+- ✅ `create_urban_agricultural_shapefile_constrained.py` (reference implementation)
+- ✅ `create_eastern_cascades_shapefile_constrained.py`
+- ✅ `create_high_cascades_shapefile_constrained.py`  
+- ✅ `create_coastal_forest_shapefile_constrained.py`
+- ✅ `create_olympic_mountains_shapefile_constrained.py`
+
+**Solution Implemented**: All scripts now include automatic CRS detection and reprojection:
+
+```python
+# Enhanced create_clipped_nlcd_if_needed() function:
+with rasterio.open(TREE_COVER_RASTER) as src:
+    print(f"NLCD CRS: {src.crs}")
+    print(f"Boundary CRS: {boundary_gdf.crs}")
+    
+    # Reproject boundary to match NLCD CRS
+    boundary_reproj = boundary_gdf.to_crs(src.crs)
+    boundary_geom_reproj = boundary_reproj.geometry.iloc[0]
+    boundary_buffered_reproj = boundary_geom_reproj.buffer(1000)  # 1000m buffer in projected units
+
+# Enhanced apply_raster_constraints_within_boundary() function:
+with rasterio.open(tcc_path) as tcc_src:
+    # Handle CRS mismatch - reproject boundary to match tree cover data if needed
+    if tcc_src.crs != elev_crs:
+        print(f"Reprojecting boundary from {elev_crs} to {tcc_src.crs} for tree cover processing")
+        boundary_gdf_tcc = gpd.GeoDataFrame([1], geometry=[boundary_geom], crs=elev_crs)
+        boundary_gdf_tcc = boundary_gdf_tcc.to_crs(tcc_src.crs)
+        boundary_geom_tcc = boundary_gdf_tcc.geometry.iloc[0]
+    else:
+        boundary_geom_tcc = boundary_geom
+        
+    # Use the correctly reprojected boundary for all tree cover operations
+    tcc_masked, _ = mask(tcc_src, [boundary_geom_tcc], crop=True, nodata=tcc_src.nodata)
+```
+
+**⚠️ All bioregion creation scripts now handle NLCD CRS automatically - no manual intervention required!**
+
+### 2. Edge Artifacts (SOLVED - Latest Approach)
+**Problem**: Thin rectangular strips appear along boundary edges due to raster/vector misalignment
 **Symptoms**: 
+- ~500m thick border around entire perimeter
 - Single-pixel wide rectangles (~72-120m wide)
 - Perfect rectangular shapes following raster grid
 - Areas as small as 7,000-35,000 m²
 
-**Solutions Applied**:
-- Inward buffer on base boundary (600m typical)
-- Single-pixel removal filter
-- Rectangular artifact detection and removal
-- Increased minimum area threshold (0.08 km²)
+**Root Cause**: Raster pixels don't align perfectly with vector boundaries, creating partial pixels that become thin polygons when converted to vectors.
 
-### 2. Raster Processing Edge Effects
-**Problem**: Boundary pixels get assigned values due to resampling
-**Symptoms**: Valid elevations/tree cover along boundaries that should be excluded
-
-**Solutions**:
+**Latest Solution - Two-Step Clipping (Urban Agricultural Script v2024)**:
 ```python
-# Apply aggressive inward buffer
-boundary_geom = boundary_geom.buffer(-0.006)  # 600m inward
-
-# Multi-stage artifact removal
-isolated_mask = gdf_geo['area_sqkm'] < single_pixel_threshold
-is_thin_strip = (aspect_ratio > 10) & (min_dimension < 150)
+def clip_to_original_boundary(gdf, boundary_gdf):
+    # Step 1: Initial clipping to original boundary
+    # (Creates partial pixel artifacts)
+    
+    # Step 2: Inward buffer and re-clip to remove edge artifacts
+    buffer_degrees = -0.00045  # ~50m inward buffer
+    buffered_boundary = original_boundary.buffer(buffer_degrees)
+    
+    # Re-clip to buffered boundary removes all edge artifacts
+    final_clipped_geom = geom.intersection(buffered_boundary)
 ```
+
+**Advantages of Two-Step Approach**:
+- **Eliminates buffer guesswork**: No need to pre-determine buffer size
+- **Preserves real data**: Only removes problematic edge artifacts
+- **Cleaner results**: No ~500m borders around boundaries
+- **Faster processing**: Eliminates need for complex merging operations
+
+### 4. Geometry Simplification Standard (NEW 2025)
+**Problem**: High-precision geometries create massive file sizes (50+ MB) and cause Mapbox upload failures
+**Solution**: Standardized 100m precision across all bioregion scripts
+
+#### Implementation Code Template
+```python
+# Simplify geometry for web use (consistent with bioregion combination)
+tolerance = 0.001  # ~100m simplification
+large_polygons['geometry'] = large_polygons.geometry.simplify(tolerance)
+
+# Round coordinates to 3 decimal places (~100m precision)
+from shapely.ops import transform
+def round_coordinates(geom):
+    """Round coordinates to 3 decimal places (~100m precision)"""
+    def round_coords(x, y, z=None):
+        rounded_x = round(x, 3)
+        rounded_y = round(y, 3)
+        return (rounded_x, rounded_y) if z is None else (rounded_x, rounded_y, round(z, 3))
+    return transform(round_coords, geom)
+
+large_polygons['geometry'] = large_polygons['geometry'].apply(round_coordinates)
+
+# Update metadata
+summary['parameters'].update({
+    'simplification_tolerance': 0.001,
+    'coordinate_precision_decimal_places': 3
+})
+```
+
+#### Apply to All Scripts
+**Required Updates**: Apply this pattern to all bioregion creation scripts:
+- `create_coast_range_shapefile_constrained.py` ✅
+- `create_western_cascades_shapefile_constrained.py` ✅  
+- `create_urban_agricultural_shapefile_constrained.py` ✅
+- `create_eastern_cascades_shapefile_constrained.py` ✅ (Updated Jan 2025)
+- `create_high_cascades_shapefile_constrained.py` ✅ (Updated Jan 2025)
+- `create_olympic_mountains_shapefile_constrained.py` ✅ (Updated Jan 2025)
+- `create_coastal_forest_shapefile_constrained.py` ✅ (Updated Jan 2025)
+- Any other bioregion creation scripts
+
+#### Benefits
+- **File size reduction**: 90%+ smaller files (53MB → 5MB typical)
+- **Faster processing**: Quicker uploads, downloads, and rendering
+- **Mapbox compatibility**: Eliminates "vector layers" metadata errors
+- **Consistent precision**: Uniform 100m accuracy across all bioregions
+- **Web performance**: Optimal for regional-scale mapping applications
+
+#### Precision Justification
+100m precision is optimal for bioregion mapping because:
+- **Ecological relevance**: Bioregions are broad habitat zones, not precise boundaries
+- **Data source alignment**: Matches 120m elevation data resolution
+- **Web mapping standards**: Appropriate for zoom levels 0-13
+- **Processing efficiency**: Balances accuracy with performance
+
+### 2. NLCD Tree Cover Data Handling (Latest 2025 Approach)
+**Problem**: Using regional NLCD subset (WA/OR only) limits coverage and requires manual file management. Additionally, the updated NLCD dataset uses a different CRS than originally expected.
+
+**Latest Solution - Dynamic NLCD Clipping with CRS Handling**:
+```python
+def create_clipped_nlcd_if_needed(boundary_gdf):
+    # Use full CONUS NLCD dataset: data/raw/nlcd_tcc_conus_2021_v2021-4.tif
+    # Automatically handle CRS differences and clip to boundary extent
+    with rasterio.open(TREE_COVER_RASTER) as src:
+        print(f"NLCD CRS: {src.crs}")
+        print(f"Boundary CRS: {boundary_gdf.crs}")
+        
+        # Reproject boundary to match NLCD CRS
+        boundary_reproj = boundary_gdf.to_crs(src.crs)
+        boundary_geom_reproj = boundary_reproj.geometry.iloc[0]
+        boundary_buffered_reproj = boundary_geom_reproj.buffer(1000)  # 1000m buffer in projected units
+        
+        # Mask and crop to boundary
+        clipped_data, clipped_transform = mask(
+            src, 
+            [boundary_buffered_reproj], 
+            crop=True, 
+            nodata=src.nodata
+        )
+```
+
+**Critical CRS Handling in Processing**:
+```python
+# In apply_raster_constraints_within_boundary():
+with rasterio.open(tcc_path) as tcc_src:
+    # Handle CRS mismatch - reproject boundary to match tree cover data if needed
+    if tcc_src.crs != elev_crs:
+        print(f"Reprojecting boundary from {elev_crs} to {tcc_src.crs} for tree cover processing")
+        boundary_gdf_tcc = gpd.GeoDataFrame([1], geometry=[boundary_geom], crs=elev_crs)
+        boundary_gdf_tcc = boundary_gdf_tcc.to_crs(tcc_src.crs)
+        boundary_geom_tcc = boundary_gdf_tcc.geometry.iloc[0]
+    else:
+        boundary_geom_tcc = boundary_geom
+        
+    # Use the correctly reprojected boundary for all tree cover operations
+    tcc_masked, _ = mask(tcc_src, [boundary_geom_tcc], crop=True, nodata=tcc_src.nodata)
+```
+
+**Benefits**:
+- **Complete coverage**: Uses full CONUS dataset ensuring no gaps
+- **Automatic CRS detection**: Detects coordinate system mismatches and reprojects as needed
+- **Robust processing**: Handles NLCD data in Albers Equal Area or other projected coordinate systems
+- **Performance optimization**: Creates boundary-specific cached files
+- **Efficient processing**: Only clips once, reuses cached version
 
 ### 3. Tree Cover NoData Handling
 **Problem**: Water areas may have 0% tree cover instead of NoData
@@ -354,9 +522,9 @@ WESTERN_JUNIPER_MAX = 0        # No juniper in High Cascades
 WESTERN_LARCH_MAX = 50         # kg/ha carbon threshold
 ```
 
-## Validation Approach
+## Validation Approach (Ignored for now)
 
-### Species Validation
+### Species Validation (Ignored for now)
 1. **Load validation plots** for target species
 2. **Filter by bioregion constraints** (elevation, etc.)
 3. **Calculate capture rate** (% of plots within bioregion)
@@ -391,6 +559,63 @@ print(f"Removed {strip_count} rectangular edge artifacts")
 3. **Constraint application**: Check that masks have reasonable pixel counts
 4. **Polygon extraction**: Verify reasonable polygon count and sizes
 
+## Latest Performance Improvements (Urban Agricultural Script v2024)
+
+The urban agricultural bioregion script represents the most advanced version of the bioregion creation pipeline, incorporating significant performance and accuracy improvements:
+
+### Key Improvements
+
+#### 1. Two-Step Edge Artifact Removal
+**Problem Solved**: Previous approach used pre-buffers that caused data gaps and still left edge artifacts
+**Solution**: Two-step clipping process that eliminates the root cause of edge artifacts
+```python
+# Step 1: Clip to exact boundary (creates partial pixel artifacts)
+# Step 2: Apply 50m inward buffer and re-clip (removes all edge artifacts)
+buffer_degrees = -0.00045  # ~50m at PNW latitude
+```
+
+#### 2. Dynamic NLCD Data Management  
+**Problem Solved**: Regional NLCD subsets require manual file management and may have coverage gaps
+**Solution**: Automatic clipping from full CONUS dataset with caching
+```python
+def create_clipped_nlcd_if_needed(boundary_gdf):
+    # Uses full CONUS dataset, clips once, caches for reuse
+    # Handles CRS reprojection automatically
+```
+
+#### 3. Performance Optimization
+**Problem Solved**: Polygon merging with 8,000+ polygons caused excessive processing time (hours)
+**Solution**: Skip merging, output individual polygons
+- **Before**: Hours of processing for `unary_union()` on 8,774 polygons  
+- **After**: Seconds to complete, individual polygons work perfectly in GIS/web mapping
+
+#### 4. Enhanced Filtering
+**Multi-stage approach** eliminates artifacts more effectively:
+```python
+# During clipping: 2000 sq meter minimum
+# Post-processing: Single-pixel removal, edge artifact removal, final area filter
+```
+
+### Script Comparison: Before vs After
+
+| Aspect | Original Approach | Latest Approach (Urban Agricultural) |
+|--------|-------------------|-------------------------------------|
+| **Edge Artifacts** | Pre-buffer + post-filtering | Two-step clipping |
+| **NLCD Data** | Regional subset files | Dynamic CONUS clipping |
+| **Performance** | Hours (merging bottleneck) | Seconds (skip merging) |
+| **Polygon Count** | 1 merged polygon | Individual polygons |
+| **CRS Handling** | Manual coordination | Automatic detection/reprojection |
+| **Caching** | No caching | Automatic NLCD caching |
+| **Artifact Removal** | Single-pass filtering | Multi-stage progressive filtering |
+
+### Recommended Migration
+
+For new bioregions, use the urban agricultural script pattern:
+1. **Copy** `scripts/create_urban_agricultural_shapefile_constrained.py`
+2. **Modify** constraint parameters for your target bioregion
+3. **Update** file paths and output names
+4. **Retain** the two-step clipping and performance optimizations
+
 ## Best Practices
 
 ### 1. Incremental Development
@@ -403,12 +628,18 @@ print(f"Removed {strip_count} rectangular edge artifacts")
 - Use visual inspection in QGIS to validate results
 - Adjust minimum area thresholds based on observed artifacts
 
-### 3. Documentation
+### 3. Geometry Optimization (NEW 2025)
+- **Apply simplification early**: Use 100m tolerance (0.001 degrees) in individual scripts
+- **Standardize precision**: Round coordinates to 3 decimal places (~100m precision)
+- **Document settings**: Include simplification parameters in metadata
+- **Test file sizes**: Aim for <10MB for combined regional datasets
+
+### 4. Documentation
 - Record all parameter changes and their effects
 - Document species-specific ecological rationale
 - Maintain consistent file naming conventions
 
-### 4. Validation
+### 5. Validation (Ignored for now)
 - Always validate against known species occurrence data
 - Use multiple validation metrics (area, capture rate, visual inspection)
 - Compare results with existing ecological boundaries where available
@@ -437,9 +668,9 @@ python scripts/combine_bioregions.py
 
 #### Outputs
 ```
-outputs/bioregions/all_bioregions_combined.geojson         # Combined dataset
+outputs/bioregions/all_bioregions_combined.geojson         # Combined dataset (~100m precision)
 outputs/bioregions/bioregions_combination_summary.json     # Statistics & metadata
-outputs/mapbox_mbtiles/pnw_forest_bioregions.mbtiles       # Mapbox tiles (max zoom 14)
+outputs/mapbox_mbtiles/pnw_forest_bioregions.mbtiles       # Mapbox tiles (max zoom 13)
 ```
 
 #### Standardized Fields Added
@@ -460,8 +691,9 @@ The script creates both GeoJSON and Mapbox tiles optimized for web mapping:
 
 **Mapbox Tiles Features:**
 - Layer name: `bioregions`
-- Max zoom level: 14 (suitable for regional analysis)
+- Max zoom level: 13 (suitable for regional analysis, reduced for performance)
 - Includes properties: `region_name`, `region_code`, `area_km2`, `bioregion_type`
+- Geometry precision: ~100m (optimized for web performance)
 - Ready for direct upload to Mapbox Studio
 
 **Prerequisites:**

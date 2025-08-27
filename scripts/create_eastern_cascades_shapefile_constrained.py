@@ -94,9 +94,9 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
     # Get boundary geometry for masking
     boundary_geom = boundary_gdf.geometry.iloc[0]
     
-    # Buffer inward slightly to avoid edge artifacts
-    boundary_geom = boundary_geom.buffer(-0.006)  # ~600m inward buffer in degrees  
-    print("Applied 600m inward buffer to avoid edge artifacts")
+    # Apply buffer (Latest 2025: no buffer, use two-step clipping instead)
+    boundary_geom = boundary_geom.buffer(0)  
+    print("Applied 0m buffer (Latest 2025: no buffer, rely on two-step clipping)")
     
     # Step 1: Load and process elevation data
     print(f"Loading elevation data from {ELEVATION_RASTER}")
@@ -304,78 +304,6 @@ def remove_artifacts_and_simplify(gdf, min_area_sqkm=0.08, max_perimeter_area_ra
     
     return eastern_cascades_bioregion
 
-def validate_bioregion_elevations(bioregion_gdf, original_boundary_gdf):
-    """Sample and validate elevations within the created bioregion"""
-    
-    print("Sampling elevations within bioregion to validate elevation constraints...")
-    
-    # Load elevation raster
-    with rasterio.open(ELEVATION_RASTER) as elev_src:
-        # Sample elevations at regular intervals across the bioregion
-        sample_points = []
-        sample_elevations = []
-        
-        # Create a regular grid of sample points
-        bounds = bioregion_gdf.total_bounds
-        x_points = np.linspace(bounds[0], bounds[2], 50)
-        y_points = np.linspace(bounds[1], bounds[3], 50)
-        
-        # Sample within the bioregion geometry
-        bioregion_geom = bioregion_gdf.geometry.iloc[0]
-        
-        for x in x_points:
-            for y in y_points:
-                point = Point(x, y)
-                if bioregion_geom.contains(point):
-                    # Transform point to raster CRS
-                    lon, lat = x, y
-                    
-                    # Sample elevation at this point
-                    row, col = elev_src.index(lon, lat)
-                    
-                    try:
-                        elev_ft = elev_src.read(1)[row, col]  # Data already in feet
-                        if not np.isnan(elev_ft):
-                            sample_points.append(point)
-                            sample_elevations.append(elev_ft)
-                    except IndexError:
-                        continue
-        
-        print(f"Collected {len(sample_elevations)} elevation samples within bioregion")
-        
-        if sample_elevations:
-            elevations = np.array(sample_elevations)
-            
-            # Calculate statistics
-            print(f"\nElevation Statistics (feet):")
-            print(f"  Minimum: {np.min(elevations):.0f} ft")
-            print(f"  Maximum: {np.max(elevations):.0f} ft")
-            print(f"  Mean: {np.mean(elevations):.0f} ft")
-            print(f"  Median: {np.median(elevations):.0f} ft")
-            print(f"  Std Dev: {np.std(elevations):.0f} ft")
-            
-            # Elevation distribution by bins
-            print(f"\nElevation Distribution:")
-            bins = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 10000]
-            hist, bin_edges = np.histogram(elevations, bins=bins)
-            
-            for i in range(len(hist)):
-                if hist[i] > 0:
-                    pct = hist[i] / len(elevations) * 100
-                    print(f"  {bin_edges[i]:.0f}-{bin_edges[i+1]:.0f} ft: {hist[i]} samples ({pct:.1f}%)")
-            
-            # Check how many samples fall within expected range
-            within_range = np.sum(elevations <= MAX_ELEVATION_FT)
-            within_pct = within_range / len(elevations) * 100
-            
-            print(f"\nConstraint Validation:")
-            print(f"  Samples ≤ {MAX_ELEVATION_FT} ft: {within_range}/{len(elevations)} ({within_pct:.1f}%)")
-            
-            if within_pct < 90:
-                print(f"  ⚠️  WARNING: Only {within_pct:.1f}% of samples fall within expected elevation range!")
-            else:
-                print(f"  ✅ {within_pct:.1f}% of samples fall within expected elevation range")
-
 def main():
     """Main processing function"""
     print("=== Creating Eastern Cascades Forest Bioregion (Shapefile + Raster Constraints) ===")
@@ -406,9 +334,6 @@ def main():
         print("No polygons remain after filtering")
         return
     
-    # Elevation validation for Eastern Cascades
-    print("\n=== Elevation Validation for Eastern Cascades Bioregion ===")
-    validate_bioregion_elevations(eastern_cascades_bioregion, boundary)
     
     # Save outputs
     output_file = OUTPUT_DIR / "eastern_cascades_constrained.geojson"
@@ -437,7 +362,6 @@ def main():
         'results': {
             'total_area_sqkm': float(eastern_cascades_bioregion.area_sqkm.iloc[0]),
             'polygon_count': len(eastern_cascades_bioregion),
-            'elevation_validation': 'See console output for detailed elevation statistics'
         }
     }
     

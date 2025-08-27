@@ -4,66 +4,82 @@
     "version": "1.0",
     "description": "Combined forest bioregions for habitat mapping and species distribution analysis",
     "coordinate_system": "EPSG:4326 (WGS84)",
-    "created_date": "2025-08-03T08:48:31.076329"
+    "created_date": "2025-08-26T16:34:53.994650"
   },
   "summary_statistics": {
-    "total_regions": 4,
-    "total_features": 51,
-    "total_area_km2": 181570.37100733534,
+    "total_regions": 7,
+    "total_features": 27034,
+    "total_area_km2": 242614.1295301861,
     "combined_bounds": {
-      "minx": -124.754,
-      "miny": 41.624,
-      "maxx": -119.56035,
-      "maxy": 49.04459
+      "minx": -124.763,
+      "miny": 41.5,
+      "maxx": -119.566,
+      "maxy": 49.151
     }
   },
   "individual_regions": [
     {
-      "region_name": "Coastal Forest",
-      "region_code": "COASTALF",
-      "source_file": "coastal_forest_shapefile_constrained.geojson",
-      "feature_count": 1,
-      "area_km2": 14320.316348999871,
+      "region_name": "Eastern Cascades",
+      "region_code": "EASTERNC",
+      "source_file": "eastern_cascades_constrained.geojson",
+      "feature_count": 6567,
+      "area_km2": 15696.892394999284,
       "precision_reduced": true,
-      "simplification_tolerance_degrees": 0.0001,
-      "coordinate_precision_decimal_places": 5,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
       "bounds": {
-        "minx": -124.754,
-        "miny": 41.624,
-        "maxx": -123.489,
-        "maxy": 48.395
+        "minx": -122.588,
+        "miny": 41.5,
+        "maxx": -119.566,
+        "maxy": 49.144
       }
     },
     {
-      "region_name": "Eastern Cascades",
-      "region_code": "EASTERNC",
-      "source_file": "eastern_cascades_species_based.geojson",
-      "feature_count": 18,
-      "area_km2": 75643.86362647355,
+      "region_name": "Western Cascades",
+      "region_code": "WESTERNC",
+      "source_file": "western_cascades_constrained.geojson",
+      "feature_count": 202,
+      "area_km2": 66096.0229814723,
       "precision_reduced": true,
-      "simplification_tolerance_degrees": 0.0001,
-      "coordinate_precision_decimal_places": 5,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
       "bounds": {
-        "minx": -122.55389,
-        "miny": 41.95277,
-        "maxx": -119.56035,
-        "maxy": 49.04459
+        "minx": -123.051,
+        "miny": 42.872,
+        "maxx": -120.637,
+        "maxy": 48.987
+      }
+    },
+    {
+      "region_name": "Western Urban-Ag",
+      "region_code": "URBANRAN",
+      "source_file": "urban_range_constrained.geojson",
+      "feature_count": 1997,
+      "area_km2": 30724.58199598143,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
+      "bounds": {
+        "minx": -123.737,
+        "miny": 41.662,
+        "maxx": -121.441,
+        "maxy": 49.002
       }
     },
     {
       "region_name": "High Cascades",
       "region_code": "HIGHCASC",
-      "source_file": "high_cascades_species_based.geojson",
-      "feature_count": 31,
-      "area_km2": 79666.56294486258,
+      "source_file": "high_cascades_constrained.geojson",
+      "feature_count": 17424,
+      "area_km2": 67894.93210498388,
       "precision_reduced": true,
-      "simplification_tolerance_degrees": 0.0001,
-      "coordinate_precision_decimal_places": 5,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
       "bounds": {
-        "minx": -123.54552,
-        "miny": 41.96053,
-        "maxx": -119.72001,
-        "maxy": 49.04417
+        "minx": -123.576,
+        "miny": 41.87,
+        "maxx": -119.679,
+        "maxy": 49.151
       }
     },
     {
@@ -71,15 +87,47 @@
       "region_code": "OLYMPICM",
       "source_file": "olympic_mountains_constrained.geojson",
       "feature_count": 1,
-      "area_km2": 11939.628086999326,
+      "area_km2": 11982.09857400094,
       "precision_reduced": true,
-      "simplification_tolerance_degrees": 0.0001,
-      "coordinate_precision_decimal_places": 5,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
       "bounds": {
         "minx": -124.719,
         "miny": 47.203,
         "maxx": -122.823,
         "maxy": 48.386
+      }
+    },
+    {
+      "region_name": "Coastal Forest",
+      "region_code": "COASTALF",
+      "source_file": "coastal_forest_constrained.geojson",
+      "feature_count": 842,
+      "area_km2": 14207.00645574922,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
+      "bounds": {
+        "minx": -124.763,
+        "miny": 41.619,
+        "maxx": -123.479,
+        "maxy": 48.395
+      }
+    },
+    {
+      "region_name": "Coast Range",
+      "region_code": "COASTRAN",
+      "source_file": "coast_range_constrained.geojson",
+      "feature_count": 1,
+      "area_km2": 36012.59502299907,
+      "precision_reduced": true,
+      "simplification_tolerance_degrees": 0.001,
+      "coordinate_precision_decimal_places": 3,
+      "bounds": {
+        "minx": -124.476,
+        "miny": 42.241,
+        "maxx": -122.812,
+        "maxy": 47.271
       }
     }
   ],
@@ -96,8 +144,8 @@
   "mbtiles_info": {
     "max_zoom": 14,
     "layer_name": "bioregions",
-    "file_size_mb": 12.1,
-    "created_date": "2025-08-03T08:48:40.058757",
+    "file_size_mb": 57.8,
+    "created_date": "2025-08-26T16:57:37.138429",
     "tippecanoe_version": ""
   }
 }

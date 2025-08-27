@@ -1,0 +1,18 @@
+{
+  "method": "shapefile_boundary_with_raster_constraints",
+  "parameters": {
+    "min_elevation_ft": 500,
+    "min_tree_cover_pct": 30,
+    "output_resolution_m": 120,
+    "min_area_sqkm": 0.08,
+    "inward_buffer_degrees": -0.006,
+    "simplification_tolerance": 0.001,
+    "coordinate_precision_decimal_places": 3
+  },
+  "data_sources": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/coastal_range_broad.shp",
+    "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
+    "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
+  },
+  "created": "2025-08-26T19:55:32.632082"
+}

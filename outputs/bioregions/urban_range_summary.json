@@ -1,0 +1,20 @@
+{
+  "method": "shapefile_boundary_with_raster_constraints",
+  "parameters": {
+    "min_elevation_ft": 1,
+    "max_elevation_ft": 1500,
+    "min_tree_cover_pct": 0,
+    "max_tree_cover_pct": 50,
+    "output_resolution_m": 120,
+    "min_area_sqkm": 0.5,
+    "inward_buffer_degrees": 0,
+    "simplification_tolerance": 0.001,
+    "coordinate_precision_decimal_places": 3
+  },
+  "data_sources": {
+    "base_boundary": "/Users/JJC/trees/outputs/bioregions/urban_agricultural_broad.shp",
+    "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
+    "tree_cover": "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"
+  },
+  "created": "2025-08-26T20:01:40.125720"
+}

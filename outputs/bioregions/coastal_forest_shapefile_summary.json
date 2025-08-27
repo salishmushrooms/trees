@@ -5,21 +5,16 @@
     "min_tree_cover_pct": 10,
     "output_resolution_m": 120,
     "min_area_sqkm": 0.5,
-    "max_perimeter_area_ratio": 50,
-    "simplification_tolerance": 0.0005
+    "simplification_tolerance": 0.001,
+    "coordinate_precision_decimal_places": 3,
+    "skip_merging": true,
+    "two_step_clipping": true
   },
   "data_sources": {
     "base_boundary": "/Users/JJC/trees/outputs/bioregions/coastal_forest_broad.shp",
     "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
-    "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif",
+    "tree_cover": "data/raw/nlcd_tcc_conus_2021_v2021-4.tif",
     "validation": "outputs/plot_carbon_percentiles_latest_surveys.geojson"
   },
-  "validation": {
-    "total_shore_pine_plots": 5017,
-    "coastal_shore_pine_plots": 120,
-    "plots_captured_by_bioregion": 36,
-    "capture_rate": 0.3,
-    "validation_success": false
-  },
-  "created": "2025-07-31T15:04:10.319083"
+  "created": "2025-08-26T19:53:22.547693"
 }

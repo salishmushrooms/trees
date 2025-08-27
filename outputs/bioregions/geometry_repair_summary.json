@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-08-26T15:59:08.985907",
+  "results": [
+    {
+      "status": "valid",
+      "file": "eastern_cascades_constrained.geojson",
+      "features": 6567
+    },
+    {
+      "status": "valid",
+      "file": "western_cascades_constrained.geojson",
+      "features": 202
+    },
+    {
+      "status": "valid",
+      "file": "urban_range_constrained.geojson",
+      "features": 1997
+    },
+    {
+      "status": "valid",
+      "file": "high_cascades_constrained.geojson",
+      "features": 17424
+    },
+    {
+      "status": "valid",
+      "file": "olympic_mountains_constrained.geojson",
+      "features": 1
+    },
+    {
+      "status": "valid",
+      "file": "coastal_forest_shapefile_constrained.geojson",
+      "features": 1
+    },
+    {
+      "status": "valid",
+      "file": "coast_range_constrained.geojson",
+      "features": 1
+    }
+  ],
+  "summary": {
+    "valid_files": 7,
+    "fixed_files": 0,
+    "failed_files": 0,
+    "not_found_files": 0
+  }
+}

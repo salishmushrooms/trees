@@ -1,0 +1,90 @@
+=== Pacific Northwest Forest Bioregions Processing ===
+=== Combining Pacific Northwest Forest Bioregions ===
+📁 Found 7 bioregion files:
+   📄 Loading Eastern Cascades (eastern_cascades)...
+      🔧 Reducing precision to ~100m...
+      ✅ Loaded 6567 features, 15,697 km²
+   📄 Loading Western Cascades (western_cascades)...
+      🔧 Reducing precision to ~100m...
+      ✅ Loaded 202 features, 66,096 km²
+   📄 Loading Western Urban-Ag (urban_range)...
+      🔧 Reducing precision to ~100m...
+      🔧 Fixing 2 invalid geometries after processing...
+      ✅ 2 geometries fixed
+      ✅ Loaded 1997 features, 30,725 km²
+   📄 Loading High Cascades (high_cascades)...
+      🔧 Reducing precision to ~100m...
+      ✅ Loaded 17424 features, 67,895 km²
+   📄 Loading Olympic Mountains (olympic_mountains)...
+      🔧 Reducing precision to ~100m...
+      ✅ Loaded 1 features, 11,982 km²
+   📄 Loading Coastal Forest (coastal_forest)...
+      🔧 Reducing precision to ~100m...
+      🔧 Fixing 4 invalid geometries after processing...
+      ✅ 4 geometries fixed
+      ✅ Loaded 842 features, 14,207 km²
+   📄 Loading Coast Range (coast_range)...
+      🔧 Reducing precision to ~100m...
+      ✅ Loaded 1 features, 36,013 km²
+
+🔄 Combining 7 bioregions...
+✅ Saved combined bioregions: outputs/bioregions/all_bioregions_combined.geojson
+✅ Saved summary report: outputs/bioregions/bioregions_combination_summary.json
+
+🎉 Successfully combined bioregions!
+   📊 Regions: 7
+   🗺️  Features: 27,034
+   📐 Total area: 242,614 km²
+   📄 Output: all_bioregions_combined.geojson
+
+📋 Included regions:
+   • Eastern Cascades: 15,697 km² (6567 features)
+   • Western Cascades: 66,096 km² (202 features)
+   • Western Urban-Ag: 30,725 km² (1997 features)
+   • High Cascades: 67,895 km² (17424 features)
+   • Olympic Mountains: 11,982 km² (1 features)
+   • Coastal Forest: 14,207 km² (842 features)
+   • Coast Range: 36,013 km² (1 features)
+
+🔍 Validating combined bioregions: all_bioregions_combined.geojson
+   ✅ File loads successfully
+   ✅ Contains 27034 features
+   ✅ CRS: EPSG:4326
+   ✅ All required columns present
+   ✅ No empty geometries
+   ✅ All geometries valid
+   📊 Regions breakdown:
+      • High Cascades: 17424 features, 1,183,001,297 km²
+      • Eastern Cascades: 6567 features, 103,081,492 km²
+      • Western Urban-Ag: 1997 features, 61,356,990 km²
+      • Coastal Forest: 842 features, 11,962,299 km²
+      • Western Cascades: 202 features, 13,351,397 km²
+      • Olympic Mountains: 1 features, 11,982 km²
+      • Coast Range: 1 features, 36,013 km²
+
+🗺️  Creating Mapbox tiles from bioregions...
+   🗑️  Removed existing pnw_forest_bioregions.mbtiles
+   ⚙️  Running tippecanoe...
+      Max zoom: 14
+      Output: pnw_forest_bioregions.mbtiles
+   ✅ Successfully created mbtiles file
+      File size: 57.8 MB
+   📄 Updated summary with mbtiles info
+
+🎉 Processing complete!
+   📄 GeoJSON: all_bioregions_combined.geojson
+   🗺️  MBTiles: pnw_forest_bioregions.mbtiles
+   📤 Upload to Mapbox Studio: outputs/mapbox_mbtiles/pnw_forest_bioregions.mbtiles
+   📊 Summary: bioregions_combination_summary.json
+
+🚀 Ready for use!
+   Load in QGIS: outputs/bioregions/all_bioregions_combined.geojson
+   Web mapping: Use region_name field for styling
+   Analysis: Join with species data using region_code
+
+📱 Mapbox Integration:
+   1. Upload pnw_forest_bioregions.mbtiles to Mapbox Studio
+   2. Create style with 'bioregions' layer
+   3. Use region_name property for styling:
+      - 'Coastal Forest', 'Olympic Mountains', 'Eastern Cascades', 'High Cascades'
+   4. Geometry simplified to ~10m precision for web performance
