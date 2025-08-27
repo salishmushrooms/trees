@@ -1,16 +1,16 @@
 {
   "bioregion_name": "High Cascades Forest",
-  "creation_date": "2025-08-26T20:10:18.344649",
+  "creation_date": "2025-08-27T13:57:11.596933",
   "parameters": {
     "base_boundary": "/Users/JJC/trees/outputs/bioregions/high_cascades_broad.shp",
-    "elevation_range_ft": "3500+",
-    "min_tree_cover_pct": 20,
-    "output_resolution_m": 120,
-    "min_area_sqkm": 0.5,
-    "simplification_tolerance": 0.001,
-    "coordinate_precision_decimal_places": 3,
-    "skip_merging": true,
-    "two_step_clipping": true
+    "elevation_range_ft": "4000-8000",
+    "min_tree_cover_pct": 30,
+    "max_tree_cover_pct": 100,
+    "output_resolution_m": 180,
+    "min_area_sqkm": 0.1,
+    "inward_buffer_degrees": 0,
+    "simplification_tolerance": 0.0015,
+    "morphological_closing_pixels": 2
   },
   "data_sources": {
     "base_boundary": "/Users/JJC/trees/outputs/bioregions/high_cascades_broad.shp",
@@ -18,7 +18,7 @@
     "tree_cover": "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"
   },
   "results": {
-    "total_area_sqkm": 67195.68485417782,
+    "total_area_sqkm": 54392.21839452647,
     "polygon_count": 1
   }
 }

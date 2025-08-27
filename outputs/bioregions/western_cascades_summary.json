@@ -1,20 +1,38 @@
 {
-  "method": "shapefile_boundary_with_raster_constraints",
+  "method": "enhanced_shapefile_boundary_with_raster_constraints_3x_detail",
+  "processing_level": "enhanced_3x_detail",
   "parameters": {
     "min_elevation_ft": 500,
-    "max_elevation_ft": 6000,
-    "min_tree_cover_pct": 20,
+    "max_elevation_ft": 5000,
+    "min_tree_cover_pct": 40,
     "max_tree_cover_pct": 100,
     "output_resolution_m": 120,
-    "min_area_sqkm": 0.5,
+    "min_area_sqkm": 0.05,
     "inward_buffer_degrees": 0,
-    "simplification_tolerance": 0.001,
-    "coordinate_precision_decimal_places": 3
+    "simplification_tolerance": 0.0008,
+    "coordinate_precision_decimal_places": 4,
+    "morphological_closing_pixels": 1,
+    "multi_stage_artifact_removal": true,
+    "enhanced_geometry_validation": true,
+    "precision_clipping": true
+  },
+  "enhancement_features": {
+    "multi_stage_clipping": "Two-buffer system (30m + 50m)",
+    "artifact_detection": "Multi-criteria (area, aspect ratio, perimeter/area)",
+    "geometry_fixing": "Enhanced validation with fallback methods",
+    "area_filtering": "Adaptive thresholds for compact vs elongated shapes",
+    "resolution_improvement": "Increased from 180m to 120m",
+    "detail_preservation": "Reduced morphological closing and simplification"
   },
   "data_sources": {
     "base_boundary": "/Users/JJC/trees/outputs/bioregions/western_cascades_broad.shp",
     "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
     "tree_cover": "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"
   },
-  "created": "2025-08-26T20:00:32.492476"
+  "results": {
+    "total_area_sqkm": 82005.62813519112,
+    "polygon_parts": 1167,
+    "processing_stages": 8
+  },
+  "created": "2025-08-27T15:40:31.717481"
 }

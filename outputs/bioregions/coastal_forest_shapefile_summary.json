@@ -16,5 +16,5 @@
     "tree_cover": "data/raw/nlcd_tcc_conus_2021_v2021-4.tif",
     "validation": "outputs/plot_carbon_percentiles_latest_surveys.geojson"
   },
-  "created": "2025-08-26T19:53:22.547693"
+  "created": "2025-08-27T16:00:42.567103"
 }

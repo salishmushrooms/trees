@@ -31,12 +31,13 @@ warnings.filterwarnings('ignore')
 MIN_ELEVATION_FT = 1       # Urban-Agricultural range minimum elevation
 MAX_ELEVATION_FT = 1500    # Urban-Agricultural range maximum elevation
 MIN_TREE_COVER_PCT = 0     # Minimum tree cover for urban/agricultural areas
-MAX_TREE_COVER_PCT = 50    # Maximum tree cover for urban/agricultural areas
-OUTPUT_RESOLUTION = 120       # Match elevation data resolution
+MAX_TREE_COVER_PCT = 30    # Maximum tree cover for urban/agricultural areas
+OUTPUT_RESOLUTION = 180       # Increased resolution to reduce polygon count and file size
 
-# Processing parameters
-min_area_sqkm = 0.5          # Minimum polygon area to remove fragments
-inward_buffer = 0             # No buffer - use precise boundary clipping instead
+# Processing parameters - middle ground between too detailed and too basic
+min_area_sqkm = 1.0         # Increased to reduce file size by eliminating small fragments
+inward_buffer = 0            # No buffer - use precise boundary clipping instead
+morphological_closing_pixels = 1  # Light gap filling to reduce small artifacts
 
 # File paths
 BASE_BOUNDARY_SHP = "/Users/JJC/trees/outputs/bioregions/urban_agricultural_broad.shp"
@@ -183,9 +184,27 @@ def apply_raster_constraints_within_boundary(boundary_gdf, clipped_nlcd_path):
             print(f"Error processing tree cover data: {e}")
             return None, None, None, None
         
-        # Apply tree cover constraint
+        # Apply tree cover constraint with light pre-smoothing to reduce small gaps
         valid_tcc_mask = ~np.isnan(tcc_data)
-        tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & (tcc_data <= MAX_TREE_COVER_PCT) & valid_tcc_mask
+        
+        if morphological_closing_pixels > 0:
+            print(f"Pre-smoothing tree cover data (light processing) to reduce small gaps...")
+            from scipy.ndimage import binary_closing, generate_binary_structure
+            
+            # Create initial mask
+            initial_tcc_mask = (tcc_data >= MIN_TREE_COVER_PCT) & (tcc_data <= MAX_TREE_COVER_PCT) & valid_tcc_mask
+            
+            # Apply light morphological closing to fill small gaps
+            structure = generate_binary_structure(2, 2)  # 8-connectivity
+            smoothed_mask = binary_closing(initial_tcc_mask, structure=structure, iterations=morphological_closing_pixels)
+            
+            # Use smoothed mask instead of original
+            tree_cover_mask = smoothed_mask
+            gaps_filled = np.sum(smoothed_mask) - np.sum(initial_tcc_mask)
+            print(f"Light pre-smoothing filled {gaps_filled} pixels ({gaps_filled * (OUTPUT_RESOLUTION**2) / 10000:.1f} hectares) of small gaps")
+        else:
+            tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & (tcc_data <= MAX_TREE_COVER_PCT) & valid_tcc_mask
+        
         print(f"Tree cover constraint: {np.sum(tree_cover_mask)} pixels {MIN_TREE_COVER_PCT}-{MAX_TREE_COVER_PCT}% within boundary")
         print(f"Excluding {np.sum(~valid_tcc_mask)} pixels with NoData (likely water/non-land areas)")
     
@@ -381,7 +400,7 @@ def remove_artifacts_and_simplify(gdf):
         return gdf_geo
     
     # Simplify geometry for web use (consistent with bioregion combination)
-    tolerance = 0.001  # ~100m simplification
+    tolerance = 0.002  # ~200m simplification - reduced detail for smaller file size
     large_polygons['geometry'] = large_polygons.geometry.simplify(tolerance)
     
     # Round coordinates to 3 decimal places (~100m precision)
@@ -570,7 +589,8 @@ def main():
             'output_resolution_m': OUTPUT_RESOLUTION,
             'min_area_sqkm': min_area_sqkm,
             'inward_buffer_degrees': inward_buffer,
-            'simplification_tolerance': 0.001,
+            'simplification_tolerance': 0.002,
+            'morphological_closing_pixels': morphological_closing_pixels,
             'coordinate_precision_decimal_places': 3
         },
         'data_sources': {

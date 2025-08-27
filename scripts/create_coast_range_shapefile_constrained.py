@@ -14,8 +14,10 @@ This approach provides much better control than pure raster-based boundary creat
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+from scipy import ndimage
 from shapely.geometry import Point, Polygon, MultiPolygon, GeometryCollection
 from shapely.ops import unary_union
+from bioregion_geometry_utils import apply_geometry_optimization
 import rasterio
 from rasterio.mask import mask
 from rasterio.features import shapes
@@ -30,15 +32,19 @@ warnings.filterwarnings('ignore')
 # Configuration - Coast Range Bioregion Parameters
 MIN_ELEVATION_FT = 500        # Coast Range minimum elevation
 MIN_TREE_COVER_PCT = 30       # Forest definition threshold
-OUTPUT_RESOLUTION = 120       # Match elevation data resolution
+OUTPUT_RESOLUTION = 240       # Reduced resolution to prevent small holes (was 120)
 
-# Processing parameters
-min_area_sqkm = 0.08          # Minimum polygon area to remove fragments
+# Processing parameters - more aggressive filtering to prevent small holes
+min_area_sqkm = 0.5           # Increased minimum area to remove fragments (was 0.08)
 inward_buffer = 0             # No buffer - use precise boundary clipping instead
+morphological_closing_pixels = 2  # Fill small holes in raster before vectorization
 
 # File paths
 BASE_BOUNDARY_SHP = "/Users/JJC/trees/outputs/bioregions/coastal_range_broad.shp"
-ELEVATION_RASTER = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
+# Try to use 240m elevation data if available, otherwise fall back to 120m
+ELEVATION_RASTER_240M = "outputs/mapbox_masks/pnw_elevation_240m_mapbox.tif"
+ELEVATION_RASTER_120M = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
+ELEVATION_RASTER = ELEVATION_RASTER_240M if Path(ELEVATION_RASTER_240M).exists() else ELEVATION_RASTER_120M
 TREE_COVER_RASTER = "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
 OUTPUT_DIR = Path("outputs/bioregions")
 
@@ -139,9 +145,20 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
     # Step 2: Load and resample tree cover data to match elevation grid
     print(f"Loading tree cover data from {TREE_COVER_RASTER}")
     
-    # Use 120m tree cover data if available, otherwise resample 30m data
+    # Use lowest resolution tree cover data available to prevent small holes
+    # Prefer 240m > 120m > 30m resolution
+    tcc_240m_path = "outputs/mapbox_masks/pnw_tree_cover_240m.tif"
     tcc_120m_path = "outputs/mapbox_masks/pnw_tree_cover_120m_quarter.tif"
-    tcc_path = tcc_120m_path if Path(tcc_120m_path).exists() else TREE_COVER_RASTER
+    
+    if Path(tcc_240m_path).exists():
+        tcc_path = tcc_240m_path
+        print("Using 240m tree cover data to minimize holes")
+    elif Path(tcc_120m_path).exists():
+        tcc_path = tcc_120m_path
+        print("Using 120m tree cover data")
+    else:
+        tcc_path = TREE_COVER_RASTER
+        print("Using 30m tree cover data (will be resampled to 240m)")
     
     with rasterio.open(tcc_path) as tcc_src:
         try:
@@ -186,7 +203,19 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
     print(f"Final coast range mask: {np.sum(coast_range_mask)} pixels")
     print(f"Approximate area: {np.sum(coast_range_mask) * (OUTPUT_RESOLUTION**2) / 1000000:.0f} km²")
     
-    return coast_range_mask, elev_transform, elev_crs, elev_profile
+    # Apply morphological closing to fill small holes in the mask
+    print(f"Applying morphological closing to fill small holes ({morphological_closing_pixels} pixel radius)...")
+    structure = ndimage.generate_binary_structure(2, 2)  # 8-connectivity
+    coast_range_mask_cleaned = ndimage.binary_closing(
+        coast_range_mask, 
+        structure=structure, 
+        iterations=morphological_closing_pixels
+    )
+    
+    holes_filled = np.sum(coast_range_mask_cleaned) - np.sum(coast_range_mask)
+    print(f"Filled {holes_filled} pixels ({holes_filled * (OUTPUT_RESOLUTION**2) / 10000:.1f} hectares) of small holes")
+    
+    return coast_range_mask_cleaned, elev_transform, elev_crs, elev_profile
 
 def raster_to_polygons_optimized(mask_array, transform, crs):
     """Convert raster mask to vector polygons with optimized processing"""
@@ -270,21 +299,8 @@ def remove_artifacts_and_simplify(gdf):
         print("Warning: No polygons meet minimum area requirement")
         return gdf_geo
     
-    # Simplify geometry for web use (consistent with bioregion combination)
-    tolerance = 0.001  # ~100m simplification
-    large_polygons['geometry'] = large_polygons.geometry.simplify(tolerance)
-    
-    # Round coordinates to 3 decimal places (~100m precision)
-    from shapely.ops import transform
-    def round_coordinates(geom):
-        """Round coordinates to 3 decimal places (~100m precision)"""
-        def round_coords(x, y, z=None):
-            rounded_x = round(x, 3)
-            rounded_y = round(y, 3)
-            return (rounded_x, rounded_y) if z is None else (rounded_x, rounded_y, round(z, 3))
-        return transform(round_coords, geom)
-    
-    large_polygons['geometry'] = large_polygons['geometry'].apply(round_coordinates)
+    # Apply geometry optimization (simplify and remove holes)
+    large_polygons = apply_geometry_optimization(large_polygons)
     
     # Skip merging for performance - keep individual polygons
     # Combine all polygons into a single MultiPolygon feature
@@ -391,8 +407,9 @@ def main():
             'output_resolution_m': OUTPUT_RESOLUTION,
             'min_area_sqkm': min_area_sqkm,
             'inward_buffer_degrees': inward_buffer,
-            'simplification_tolerance': 0.001,
-            'coordinate_precision_decimal_places': 3
+            'simplification_tolerance': 0.002,
+            'coordinate_precision_decimal_places': 3,
+            'morphological_closing_pixels': morphological_closing_pixels
         },
         'data_sources': {
             'base_boundary': BASE_BOUNDARY_SHP,

@@ -15,8 +15,10 @@ Adapted from Olympic Mountains bioregion implementation for Eastern Cascades for
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+from scipy import ndimage
 from shapely.geometry import Point, Polygon, MultiPolygon
 from shapely.ops import unary_union
+from bioregion_geometry_utils import apply_geometry_optimization
 import rasterio
 from rasterio.mask import mask
 from rasterio.features import shapes
@@ -29,14 +31,23 @@ import json
 warnings.filterwarnings('ignore')
 
 # Configuration - Eastern Cascades Forest Bioregion Parameters
-MAX_ELEVATION_FT = 3500       # Rain shadow effect upper limit
-MIN_TREE_COVER_PCT = 20       # Drier forest requirement
-OUTPUT_RESOLUTION = 120       # Match elevation data resolution
+MAX_ELEVATION_FT = 5000       # Increased upper limit (was 3500ft)
+MIN_TREE_COVER_PCT = 20       # Drier forest requirement (appropriate for Eastern Cascades)
+OUTPUT_RESOLUTION = 180       # Optimized resolution for balance of detail and performance
+
+# Processing parameters - balanced filtering to preserve natural gaps
+min_area_sqkm = 0.1           # Allow smaller forest patches
+morphological_closing_pixels = 2  # Fill holes up to ~2 pixels (360m radius) to reduce small gaps
 
 # File paths
 BASE_BOUNDARY_SHP = "/Users/JJC/trees/outputs/bioregions/eastern_cascades_broad.shp"
-ELEVATION_RASTER = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
-TREE_COVER_RASTER = "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
+# Try to use 180m elevation data if available, otherwise fall back to 120m
+ELEVATION_RASTER_180M = "outputs/mapbox_masks/pnw_elevation_180m_mapbox.tif"  
+ELEVATION_RASTER_120M = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
+ELEVATION_RASTER = ELEVATION_RASTER_180M if Path(ELEVATION_RASTER_180M).exists() else ELEVATION_RASTER_120M
+TREE_COVER_RASTER = "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"
+# High Cascades area to subtract from Eastern Cascades
+HIGH_CASCADES_GEOJSON = "/Users/JJC/trees/outputs/bioregions/high_cascades_constrained.geojson"
 OUTPUT_DIR = Path("outputs/bioregions")
 
 def load_base_boundary():
@@ -86,6 +97,49 @@ def load_base_boundary():
     print(f"Boundary extent: {bounds[0]:.3f}, {bounds[1]:.3f} to {bounds[2]:.3f}, {bounds[3]:.3f}")
     
     return boundary_gdf
+
+def subtract_high_cascades_area(eastern_boundary_gdf):
+    """Subtract High Cascades area from Eastern Cascades boundary"""
+    print(f"Loading High Cascades area to subtract from {HIGH_CASCADES_GEOJSON}")
+    
+    if not Path(HIGH_CASCADES_GEOJSON).exists():
+        print(f"Warning: High Cascades file not found: {HIGH_CASCADES_GEOJSON}")
+        print("Proceeding without subtraction...")
+        return eastern_boundary_gdf
+    
+    try:
+        # Load High Cascades area
+        high_cascades_gdf = gpd.read_file(HIGH_CASCADES_GEOJSON)
+        high_cascades_gdf = high_cascades_gdf.to_crs('EPSG:4326')  # Ensure same CRS
+        
+        print(f"Loaded High Cascades: {len(high_cascades_gdf)} features")
+        
+        # Get the geometries
+        eastern_geom = eastern_boundary_gdf.geometry.iloc[0]
+        high_cascades_geom = unary_union(high_cascades_gdf.geometry)
+        
+        # Subtract High Cascades from Eastern Cascades
+        subtracted_geom = eastern_geom.difference(high_cascades_geom)
+        
+        # Calculate areas for reporting
+        original_area = eastern_geom.area * 111 * 111
+        high_cascades_area = high_cascades_geom.area * 111 * 111
+        remaining_area = subtracted_geom.area * 111 * 111
+        
+        print(f"Original Eastern Cascades area: {original_area:.0f} km²")
+        print(f"High Cascades area to subtract: {high_cascades_area:.0f} km²")
+        print(f"Remaining Eastern Cascades area: {remaining_area:.0f} km²")
+        print(f"Subtracted: {original_area - remaining_area:.0f} km² ({((original_area - remaining_area)/original_area)*100:.1f}%)")
+        
+        # Create new GeoDataFrame with subtracted geometry
+        subtracted_gdf = gpd.GeoDataFrame([{'id': 1}], geometry=[subtracted_geom], crs='EPSG:4326')
+        
+        return subtracted_gdf
+        
+    except Exception as e:
+        print(f"Error subtracting High Cascades: {e}")
+        print("Proceeding with original Eastern Cascades boundary...")
+        return eastern_boundary_gdf
 
 def apply_raster_constraints_within_boundary(boundary_gdf):
     """Apply elevation and tree cover constraints within the boundary"""
@@ -162,9 +216,27 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
             print(f"Error processing tree cover data: {e}")
             return None, None, None, None
         
-        # Apply tree cover constraint
+        # Apply tree cover constraint with pre-smoothing to reduce small gaps
         valid_tcc_mask = ~np.isnan(tcc_data)
-        tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & valid_tcc_mask
+        
+        if morphological_closing_pixels > 0:
+            print(f"Pre-smoothing tree cover data to reduce small gaps...")
+            from scipy.ndimage import binary_closing, generate_binary_structure
+            
+            # Create initial mask
+            initial_tcc_mask = (tcc_data >= MIN_TREE_COVER_PCT) & valid_tcc_mask
+            
+            # Apply morphological closing to fill small gaps
+            structure = generate_binary_structure(2, 2)  # 8-connectivity
+            smoothed_mask = binary_closing(initial_tcc_mask, structure=structure, iterations=morphological_closing_pixels)
+            
+            # Use smoothed mask instead of original
+            tree_cover_mask = smoothed_mask
+            gaps_filled = np.sum(smoothed_mask) - np.sum(initial_tcc_mask)
+            print(f"Pre-smoothing filled {gaps_filled} pixels ({gaps_filled * (OUTPUT_RESOLUTION**2) / 10000:.1f} hectares) of small gaps")
+        else:
+            tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & valid_tcc_mask
+        
         print(f"Tree cover constraint: {np.sum(tree_cover_mask)} pixels ≥ {MIN_TREE_COVER_PCT}% within boundary")
         print(f"Excluding {np.sum(~valid_tcc_mask)} pixels with NoData (likely water/non-land areas)")
     
@@ -175,7 +247,23 @@ def apply_raster_constraints_within_boundary(boundary_gdf):
     print(f"Final Eastern Cascades forest mask: {np.sum(eastern_cascades_mask)} pixels")
     print(f"Approximate area: {np.sum(eastern_cascades_mask) * (OUTPUT_RESOLUTION**2) / 1000000:.0f} km²")
     
-    return eastern_cascades_mask, elev_transform, elev_crs, elev_profile
+    # Apply morphological closing to fill small holes in the mask (if enabled)
+    if morphological_closing_pixels > 0:
+        print(f"Applying morphological closing to fill small holes ({morphological_closing_pixels} pixel radius)...")
+        structure = ndimage.generate_binary_structure(2, 2)  # 8-connectivity
+        eastern_cascades_mask_cleaned = ndimage.binary_closing(
+            eastern_cascades_mask, 
+            structure=structure, 
+            iterations=morphological_closing_pixels
+        )
+        
+        holes_filled = np.sum(eastern_cascades_mask_cleaned) - np.sum(eastern_cascades_mask)
+        print(f"Filled {holes_filled} pixels ({holes_filled * (OUTPUT_RESOLUTION**2) / 10000:.1f} hectares) of small holes")
+        
+        return eastern_cascades_mask_cleaned, elev_transform, elev_crs, elev_profile
+    else:
+        print("Morphological closing disabled - preserving all natural gaps from low tree density areas")
+        return eastern_cascades_mask, elev_transform, elev_crs, elev_profile
 
 def raster_to_polygons_optimized(mask_array, transform, crs):
     """Convert raster mask to vector polygons with optimized processing"""
@@ -210,7 +298,7 @@ def raster_to_polygons_optimized(mask_array, transform, crs):
     
     return gdf
 
-def remove_artifacts_and_simplify(gdf, min_area_sqkm=0.08, max_perimeter_area_ratio=None):
+def remove_artifacts_and_simplify(gdf, min_area_sqkm=min_area_sqkm, max_perimeter_area_ratio=None):
     """Remove artifacts and simplify geometry"""
     print(f"Removing artifacts and simplifying (min_area={min_area_sqkm}km², max_P/A_ratio={max_perimeter_area_ratio})...")
     
@@ -268,9 +356,8 @@ def remove_artifacts_and_simplify(gdf, min_area_sqkm=0.08, max_perimeter_area_ra
     compact_polygons = large_polygons
     print("Skipping perimeter/area ratio filter - keeping all polygons above minimum area")
     
-    # Simplify geometry for web use
-    tolerance = 0.0005  # ~50m simplification
-    compact_polygons['geometry'] = compact_polygons.geometry.simplify(tolerance)
+    # Apply geometry optimization (simplify and remove holes)
+    compact_polygons = apply_geometry_optimization(compact_polygons)
     
     # Try to merge polygons
     try:
@@ -313,6 +400,9 @@ def main():
     if boundary is None:
         print("Failed to load base boundary")
         return
+    
+    # Subtract High Cascades area from Eastern Cascades boundary
+    boundary = subtract_high_cascades_area(boundary)
     
     # Apply raster constraints
     forest_mask, transform, crs, _ = apply_raster_constraints_within_boundary(boundary)

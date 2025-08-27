@@ -23,6 +23,8 @@ from datetime import datetime
 import warnings
 import subprocess
 import shutil
+from shapely.geometry import Polygon, MultiPolygon
+from shapely.ops import unary_union
 
 warnings.filterwarnings('ignore')
 
@@ -30,11 +32,12 @@ warnings.filterwarnings('ignore')
 BIOREGION_FILES = [
     'eastern_cascades_constrained.geojson',
     'western_cascades_constrained.geojson', 
-    'urban_range_constrained.geojson',
     'high_cascades_constrained.geojson',
-    'olympic_mountains_constrained.geojson',
+    'lowland_forest_constrained.geojson',
     'coastal_forest_constrained.geojson',
-    'coast_range_constrained.geojson'
+    'olympic_mountains_constrained.geojson',
+    'coast_range_constrained.geojson',
+    'urban_range_constrained.geojson',
 ]
 
 
@@ -204,7 +207,7 @@ def validate_combined_bioregions(combined_file=None):
         print(f"   ❌ Validation error: {e}")
         return False
 
-def create_bioregions_mbtiles(geojson_file=None, max_zoom=13):
+def create_bioregions_mbtiles(geojson_file=None, max_zoom=12):
     """
     Create Mapbox mbtiles from combined bioregions using Tippecanoe
     
@@ -330,7 +333,7 @@ def main():
         
         if is_valid:
             # Create mbtiles
-            mbtiles_path = create_bioregions_mbtiles(output_path, max_zoom=14)
+            mbtiles_path = create_bioregions_mbtiles(output_path, max_zoom=12)
             
             print(f"\n🎉 Processing complete!")
             print(f"   📄 GeoJSON: {output_path.name}")

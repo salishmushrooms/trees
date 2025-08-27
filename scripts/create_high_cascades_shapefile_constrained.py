@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Create High Cascades Forest Bioregion using Shapefile Boundary + Raster Constraints
+Create High Cascades Bioregion using Shapefile Boundary + Raster Constraints
 
-This script creates a High Cascades forest bioregion by:
+This script creates a High Cascades bioregion by:
 1. Loading user-defined High Cascades boundary shapefile as base area
 2. Applying elevation constraints (≥3500ft) within the boundary
 3. Applying tree cover constraints (≥20%) within the boundary
@@ -28,24 +28,24 @@ import json
 
 warnings.filterwarnings('ignore')
 
-# Configuration - High Cascades Forest Bioregion Parameters
-MIN_ELEVATION_FT = 3500       # Subalpine forest lower limit
-MIN_TREE_COVER_PCT = 20       # Alpine/subalpine forest requirement
-OUTPUT_RESOLUTION = 120       # Match elevation data resolution
+# Configuration - High Cascades Bioregion Parameters
+MIN_ELEVATION_FT = 4000       # High Cascades minimum elevation (will be adjusted by latitude)
+MAX_ELEVATION_FT = 8000       # Above treeline limit
+MIN_TREE_COVER_PCT = 30       # Account for alpine openings and natural meadows
+MAX_TREE_COVER_PCT = 100       # Account for natural meadows and rocky areas
+OUTPUT_RESOLUTION = 180       # Sweet spot resolution - balance between detail and performance
 
-# Performance optimization settings (Latest 2025)
-min_area_sqkm = 0.5           # Larger minimum for fewer polygons
-skip_merging = True           # Keep individual polygons for performance
+# Processing parameters - balanced filtering to preserve natural gaps
+min_area_sqkm = 0.1           # Allow much smaller forest patches (same as Western Cascades)
 inward_buffer = 0             # No buffer - use precise boundary clipping instead
-
-# Geometry simplification settings (Latest 2025)
-simplification_tolerance = 0.001      # ~100m simplification for web performance
-coordinate_precision_decimal_places = 3  # 3 decimal places = ~100m precision
+morphological_closing_pixels = 2  # Fill holes up to ~2 pixels (360m radius) to reduce small gaps
 
 # File paths
 BASE_BOUNDARY_SHP = "/Users/JJC/trees/outputs/bioregions/high_cascades_broad.shp"
-ELEVATION_RASTER = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
-# Use full CONUS dataset for dynamic clipping
+# Try to use 180m elevation data if available, otherwise fall back to 120m
+ELEVATION_RASTER_180M = "outputs/mapbox_masks/pnw_elevation_180m_mapbox.tif"  
+ELEVATION_RASTER_120M = "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif"
+ELEVATION_RASTER = ELEVATION_RASTER_180M if Path(ELEVATION_RASTER_180M).exists() else ELEVATION_RASTER_120M
 TREE_COVER_RASTER = "data/raw/nlcd_tcc_conus_2021_v2021-4.tif"
 OUTPUT_DIR = Path("outputs/bioregions")
 
@@ -184,10 +184,9 @@ def apply_raster_constraints_within_boundary(boundary_gdf, clipped_nlcd_path=Non
         
         # Apply elevation constraint - High Cascades (data already in feet)
         elev_data_ft = elev_data  # Data is already in feet
-        # No maximum elevation for High Cascades
-        elevation_mask = (elev_data_ft >= MIN_ELEVATION_FT) & (~np.isnan(elev_data_ft))
+        elevation_mask = (elev_data_ft >= MIN_ELEVATION_FT) & (elev_data_ft <= MAX_ELEVATION_FT) & (~np.isnan(elev_data_ft))
         
-        print(f"Elevation constraint: {np.sum(elevation_mask)} pixels ≥ {MIN_ELEVATION_FT}ft")
+        print(f"Elevation constraint: {np.sum(elevation_mask)} pixels {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}ft within boundary")
         
         # Debug: Check elevation values where mask is True
         if np.sum(elevation_mask) > 0:
@@ -242,10 +241,28 @@ def apply_raster_constraints_within_boundary(boundary_gdf, clipped_nlcd_path=Non
             print(f"Error processing tree cover data: {e}")
             return None, None, None, None
         
-        # Apply tree cover constraint
+        # Apply tree cover constraint with pre-smoothing to reduce small gaps
         valid_tcc_mask = ~np.isnan(tcc_data)
-        tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & valid_tcc_mask
-        print(f"Tree cover constraint: {np.sum(tree_cover_mask)} pixels ≥ {MIN_TREE_COVER_PCT}% within boundary")
+        
+        if morphological_closing_pixels > 0:
+            print(f"Pre-smoothing tree cover data to reduce small gaps...")
+            from scipy.ndimage import binary_closing, generate_binary_structure
+            
+            # Create initial mask
+            initial_tcc_mask = (tcc_data >= MIN_TREE_COVER_PCT) & (tcc_data <= MAX_TREE_COVER_PCT) & valid_tcc_mask
+            
+            # Apply morphological closing to fill small gaps
+            structure = generate_binary_structure(2, 2)  # 8-connectivity
+            smoothed_mask = binary_closing(initial_tcc_mask, structure=structure, iterations=morphological_closing_pixels)
+            
+            # Use smoothed mask instead of original
+            tree_cover_mask = smoothed_mask
+            gaps_filled = np.sum(smoothed_mask) - np.sum(initial_tcc_mask)
+            print(f"Pre-smoothing filled {gaps_filled} pixels ({gaps_filled * (OUTPUT_RESOLUTION**2) / 10000:.1f} hectares) of small gaps")
+        else:
+            tree_cover_mask = (tcc_data >= MIN_TREE_COVER_PCT) & (tcc_data <= MAX_TREE_COVER_PCT) & valid_tcc_mask
+        
+        print(f"Tree cover constraint: {np.sum(tree_cover_mask)} pixels {MIN_TREE_COVER_PCT}-{MAX_TREE_COVER_PCT}% within boundary")
         print(f"Excluding {np.sum(~valid_tcc_mask)} pixels with NoData (likely water/non-land areas)")
     
     # Step 3: Combine constraints
@@ -383,7 +400,7 @@ def remove_artifacts_and_simplify(gdf, boundary_gdf, min_area_sqkm=0.5, max_peri
     
     # Remove isolated single pixels (likely edge artifacts)
     print("Removing isolated single-pixel artifacts...")
-    pixel_area_km2 = (120 * 120) / 1000000  # 120m pixels in km²
+    pixel_area_km2 = (OUTPUT_RESOLUTION * OUTPUT_RESOLUTION) / 1000000  # 180m pixels in km²
     single_pixel_threshold = pixel_area_km2 * 1.5  # Remove anything smaller than 1.5 pixels
     
     isolated_mask = gdf_geo['area_sqkm'] < single_pixel_threshold
@@ -422,21 +439,9 @@ def remove_artifacts_and_simplify(gdf, boundary_gdf, min_area_sqkm=0.5, max_peri
     compact_polygons = large_polygons
     print("Skipping perimeter/area ratio filter - keeping all polygons above minimum area")
     
-    # Simplify geometry for web use (consistent with bioregion combination)
-    tolerance = simplification_tolerance  # Use global setting (~100m)
+    # Simplify geometry for web use
+    tolerance = 0.0015  # ~150m simplification
     compact_polygons['geometry'] = compact_polygons.geometry.simplify(tolerance)
-    
-    # Round coordinates to 3 decimal places (~100m precision)
-    from shapely.ops import transform
-    def round_coordinates(geom):
-        """Round coordinates to 3 decimal places (~100m precision)"""
-        def round_coords(x, y, z=None):
-            rounded_x = round(x, coordinate_precision_decimal_places)
-            rounded_y = round(y, coordinate_precision_decimal_places)
-            return (rounded_x, rounded_y) if z is None else (rounded_x, rounded_y, round(z, coordinate_precision_decimal_places))
-        return transform(round_coords, geom)
-    
-    compact_polygons['geometry'] = compact_polygons['geometry'].apply(round_coordinates)
     
     # Combine all polygons into a single MultiPolygon feature  
     print(f"Combining {len(compact_polygons)} polygons into single MultiPolygon feature...")
@@ -546,14 +551,14 @@ def main():
         'creation_date': pd.Timestamp.now().isoformat(),
         'parameters': {
             'base_boundary': BASE_BOUNDARY_SHP,
-            'elevation_range_ft': f"{MIN_ELEVATION_FT}+",
+            'elevation_range_ft': f"{MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}",
             'min_tree_cover_pct': MIN_TREE_COVER_PCT,
+            'max_tree_cover_pct': MAX_TREE_COVER_PCT,
             'output_resolution_m': OUTPUT_RESOLUTION,
             'min_area_sqkm': min_area_sqkm,
-            'simplification_tolerance': simplification_tolerance,
-            'coordinate_precision_decimal_places': coordinate_precision_decimal_places,
-            'skip_merging': skip_merging,
-            'two_step_clipping': True
+            'inward_buffer_degrees': inward_buffer,
+            'simplification_tolerance': 0.0015,
+            'morphological_closing_pixels': morphological_closing_pixels
         },
         'data_sources': {
             'base_boundary': BASE_BOUNDARY_SHP,
@@ -572,7 +577,7 @@ def main():
     print(f"\n=== Final Summary ===")
     total_area = high_cascades_bioregion.iloc[0].get('total_area_sqkm', high_cascades_bioregion.geometry.area.sum() * 111 * 111)
     print(f"High Cascades forest bioregion area: {total_area:.0f} km²")
-    print(f"Elevation range: {MIN_ELEVATION_FT}ft+")
+    print(f"Elevation range: {MIN_ELEVATION_FT}-{MAX_ELEVATION_FT}ft")
     print(f"Minimum tree cover: {MIN_TREE_COVER_PCT}%")
     
     print(f"\n✅ High Cascades forest bioregion created successfully!")

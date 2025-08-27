@@ -441,9 +441,39 @@ def remove_offshore_bands_and_simplify(gdf, boundary_gdf, min_area_sqkm=0.08, ma
         compact_polygons = large_polygons
         print("Skipping perimeter/area ratio filter - keeping all polygons above minimum area")
     
-    # Simplify geometry for web use (consistent with bioregion combination)
+    # Simplify geometry and remove small holes for web use
     tolerance = simplification_tolerance  # Use global setting (~100m)
-    compact_polygons['geometry'] = compact_polygons.geometry.simplify(tolerance)
+    hole_threshold = 0.001  # Remove holes smaller than ~100m radius (0.03 km²)
+    
+    print(f"Simplifying geometries (tolerance={tolerance}) and removing small holes...")
+    
+    def simplify_and_remove_holes(geom):
+        """Simplify geometry and remove small holes"""
+        if geom is None or geom.is_empty:
+            return geom
+        
+        # First simplify
+        simplified = geom.simplify(tolerance)
+        
+        # Remove small holes from polygons
+        if hasattr(simplified, 'exterior'):  # Single Polygon
+            exterior = simplified.exterior
+            holes = [hole for hole in simplified.interiors 
+                    if Polygon(hole).area >= hole_threshold]
+            return Polygon(exterior, holes)
+        elif hasattr(simplified, 'geoms'):  # MultiPolygon
+            cleaned_polys = []
+            for poly in simplified.geoms:
+                if hasattr(poly, 'exterior'):
+                    exterior = poly.exterior
+                    holes = [hole for hole in poly.interiors 
+                            if Polygon(hole).area >= hole_threshold]
+                    cleaned_polys.append(Polygon(exterior, holes))
+            return MultiPolygon(cleaned_polys) if cleaned_polys else simplified
+        else:
+            return simplified
+    
+    compact_polygons['geometry'] = compact_polygons.geometry.apply(simplify_and_remove_holes)
     
     # Round coordinates to 3 decimal places (~100m precision)
     from shapely.ops import transform
