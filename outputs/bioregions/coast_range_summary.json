@@ -15,5 +15,5 @@
     "elevation": "outputs/mapbox_masks/pnw_elevation_120m_mapbox.tif",
     "tree_cover": "outputs/mapbox_masks/pnw_tree_cover_30m_full.tif"
   },
-  "created": "2025-08-27T09:08:57.005778"
+  "created": "2025-08-27T17:21:27.626418"
 }
