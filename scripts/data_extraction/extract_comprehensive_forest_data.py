@@ -12,17 +12,38 @@ databases = {
 }
 
 # Query to extract comprehensive forest data for mushroom habitat modeling
+# Uses most recent survey data only (latest INVYR) for each plot location
 query = """
+WITH latest_plots AS (
+    SELECT p.CN as PLOT_CN,
+           p.STATECD,
+           p.UNITCD, 
+           p.COUNTYCD,
+           p.PLOT,
+           p.LAT,
+           p.LON,
+           p.INVYR,
+           p.ELEV,
+           p.PLOT_STATUS_CD,
+           ROW_NUMBER() OVER (
+               PARTITION BY p.STATECD, p.UNITCD, p.COUNTYCD, p.PLOT 
+               ORDER BY p.INVYR DESC
+           ) as rn
+    FROM PLOT p
+    WHERE p.LAT IS NOT NULL 
+        AND p.LON IS NOT NULL
+        AND p.PLOT_STATUS_CD = 1  -- Forested plots only
+)
 SELECT 
-    p.CN as PLOT_CN,
-    p.STATECD,
-    p.UNITCD, 
-    p.COUNTYCD,
-    p.PLOT,
-    p.LAT,
-    p.LON,
-    p.INVYR,
-    p.ELEV,
+    lp.PLOT_CN,
+    lp.STATECD,
+    lp.UNITCD, 
+    lp.COUNTYCD,
+    lp.PLOT,
+    lp.LAT,
+    lp.LON,
+    lp.INVYR,
+    lp.ELEV,
     
     -- Plot-level forest type information
     c.FORTYPCD,
@@ -38,76 +59,67 @@ SELECT
     
     -- Douglas-fir metrics (Pseudotsuga menziesii) - SPCD 202
     SUM(CASE WHEN t.SPCD = 202 THEN 1 ELSE 0 END) as DOUGLAS_FIR_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 202 THEN t.CARBON_AG ELSE 0 END)) as DOUGLAS_FIR_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD = 202 THEN t.CARBON_BG ELSE 0 END)) as DOUGLAS_FIR_CARBON_BG,
+    ROUND(SUM(CASE WHEN t.SPCD = 202 THEN t.CARBON_AG ELSE 0 END), 0) as DOUGLAS_FIR_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 202 THEN t.CARBON_BG ELSE 0 END), 0) as DOUGLAS_FIR_CARBON_BG,
     ROUND(SUM(CASE WHEN t.SPCD = 202 THEN t.DIA * t.DIA ELSE 0 END)) as DOUGLAS_FIR_BA,
     ROUND(SUM(CASE WHEN t.SPCD = 202 THEN POWER((0.3 * t.DIA + 1.2), 2) * 3.14159 ELSE 0 END)) as DOUGLAS_FIR_CROWN_AREA,
     AVG(CASE WHEN t.SPCD = 202 AND t.UNCRCD IS NOT NULL THEN t.UNCRCD END) as DOUGLAS_FIR_AVG_UNCRCD,
     AVG(CASE WHEN t.SPCD = 202 AND t.CR IS NOT NULL THEN t.CR END) as DOUGLAS_FIR_AVG_CR,
     
     -- Western Hemlock (Tsuga heterophylla) - SPCD 263
-    SUM(CASE WHEN t.SPCD = 263 THEN 1 ELSE 0 END) as HEMLOCK_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.CARBON_AG ELSE 0 END)) as HEMLOCK_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.CARBON_BG ELSE 0 END)) as HEMLOCK_CARBON_BG,
-    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.DIA * t.DIA ELSE 0 END)) as HEMLOCK_BA,
-    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN POWER((0.3 * t.DIA + 1.2), 2) * 3.14159 ELSE 0 END)) as HEMLOCK_CROWN_AREA,
-    AVG(CASE WHEN t.SPCD = 263 AND t.UNCRCD IS NOT NULL THEN t.UNCRCD END) as HEMLOCK_AVG_UNCRCD,
+    SUM(CASE WHEN t.SPCD = 263 THEN 1 ELSE 0 END) as WESTERN_HEMLOCK_COUNT,
+    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.CARBON_AG ELSE 0 END), 0) as WESTERN_HEMLOCK_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.CARBON_BG ELSE 0 END), 0) as WESTERN_HEMLOCK_CARBON_BG,
+    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN t.DIA * t.DIA ELSE 0 END)) as WESTERN_HEMLOCK_BA,
+    ROUND(SUM(CASE WHEN t.SPCD = 263 THEN POWER((0.3 * t.DIA + 1.2), 2) * 3.14159 ELSE 0 END)) as WESTERN_HEMLOCK_CROWN_AREA,
+    AVG(CASE WHEN t.SPCD = 263 AND t.UNCRCD IS NOT NULL THEN t.UNCRCD END) as WESTERN_HEMLOCK_AVG_UNCRCD,
     
     -- Western Red Cedar (Thuja plicata) - SPCD 242
-    SUM(CASE WHEN t.SPCD = 242 THEN 1 ELSE 0 END) as CEDAR_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.CARBON_AG ELSE 0 END)) as CEDAR_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.CARBON_BG ELSE 0 END)) as CEDAR_CARBON_BG,
-    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.DIA * t.DIA ELSE 0 END)) as CEDAR_BA,
-    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN POWER((0.3 * t.DIA + 1.2), 2) * 3.14159 ELSE 0 END)) as CEDAR_CROWN_AREA,
-    AVG(CASE WHEN t.SPCD = 242 AND t.UNCRCD IS NOT NULL THEN t.UNCRCD END) as CEDAR_AVG_UNCRCD,
+    SUM(CASE WHEN t.SPCD = 242 THEN 1 ELSE 0 END) as WESTERN_RED_CEDAR_COUNT,
+    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.CARBON_AG ELSE 0 END), 0) as WESTERN_RED_CEDAR_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.CARBON_BG ELSE 0 END), 0) as WESTERN_RED_CEDAR_CARBON_BG,
+    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN t.DIA * t.DIA ELSE 0 END)) as WESTERN_RED_CEDAR_BA,
+    ROUND(SUM(CASE WHEN t.SPCD = 242 THEN POWER((0.3 * t.DIA + 1.2), 2) * 3.14159 ELSE 0 END)) as WESTERN_RED_CEDAR_CROWN_AREA,
+    AVG(CASE WHEN t.SPCD = 242 AND t.UNCRCD IS NOT NULL THEN t.UNCRCD END) as WESTERN_RED_CEDAR_AVG_UNCRCD,
     
     -- Sitka Spruce (Picea sitchensis) - SPCD 098
     SUM(CASE WHEN t.SPCD = 98 THEN 1 ELSE 0 END) as SITKA_SPRUCE_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 98 THEN t.CARBON_AG ELSE 0 END)) as SITKA_SPRUCE_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 98 THEN t.CARBON_AG ELSE 0 END), 0) as SITKA_SPRUCE_CARBON,
     ROUND(SUM(CASE WHEN t.SPCD = 98 THEN POWER((0.25 * t.DIA + 1.0), 2) * 3.14159 ELSE 0 END)) as SITKA_SPRUCE_CROWN_AREA,
     
     -- Noble Fir (Abies procera) - SPCD 011
     SUM(CASE WHEN t.SPCD = 11 THEN 1 ELSE 0 END) as NOBLE_FIR_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 11 THEN t.CARBON_AG ELSE 0 END)) as NOBLE_FIR_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 11 THEN t.CARBON_AG ELSE 0 END), 0) as NOBLE_FIR_CARBON,
     ROUND(SUM(CASE WHEN t.SPCD = 11 THEN POWER((0.28 * t.DIA + 1.1), 2) * 3.14159 ELSE 0 END)) as NOBLE_FIR_CROWN_AREA,
     
     -- Pacific Silver Fir (Abies amabilis) - SPCD 017
-    SUM(CASE WHEN t.SPCD = 17 THEN 1 ELSE 0 END) as SILVER_FIR_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 17 THEN t.CARBON_AG ELSE 0 END)) as SILVER_FIR_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD = 17 THEN POWER((0.28 * t.DIA + 1.1), 2) * 3.14159 ELSE 0 END)) as SILVER_FIR_CROWN_AREA,
+    SUM(CASE WHEN t.SPCD = 17 THEN 1 ELSE 0 END) as PACIFIC_SILVER_FIR_COUNT,
+    ROUND(SUM(CASE WHEN t.SPCD = 17 THEN t.CARBON_AG ELSE 0 END), 0) as PACIFIC_SILVER_FIR_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 17 THEN POWER((0.28 * t.DIA + 1.1), 2) * 3.14159 ELSE 0 END)) as PACIFIC_SILVER_FIR_CROWN_AREA,
     
-    -- True Firs combined (Abies species only - excludes Douglas-fir)
-    SUM(CASE WHEN t.SPCD BETWEEN 10 AND 19 THEN 1 ELSE 0 END) as TRUE_FIR_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD BETWEEN 10 AND 19 THEN t.CARBON_AG ELSE 0 END)) as TRUE_FIR_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD BETWEEN 10 AND 19 THEN POWER((0.28 * t.DIA + 1.1), 2) * 3.14159 ELSE 0 END)) as TRUE_FIR_CROWN_AREA,
-    
-    -- All Pines combined (Pinus species)
-    SUM(CASE WHEN t.SPCD BETWEEN 100 AND 199 THEN 1 ELSE 0 END) as ALL_PINE_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD BETWEEN 100 AND 199 THEN t.CARBON_AG ELSE 0 END)) as ALL_PINE_CARBON,
-    ROUND(SUM(CASE WHEN t.SPCD BETWEEN 100 AND 199 THEN POWER((0.35 * t.DIA + 0.8), 2) * 3.14159 ELSE 0 END)) as ALL_PINE_CROWN_AREA,
     
     -- Individual hardwood species for mushroom habitat analysis
     -- Bigleaf Maple (Acer macrophyllum) - SPCD 312
     SUM(CASE WHEN t.SPCD = 312 THEN 1 ELSE 0 END) as BIGLEAF_MAPLE_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 312 THEN t.CARBON_AG ELSE 0 END)) as BIGLEAF_MAPLE_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 312 THEN t.CARBON_AG ELSE 0 END), 0) as BIGLEAF_MAPLE_CARBON,
     ROUND(SUM(CASE WHEN t.SPCD = 312 THEN POWER((0.4 * t.DIA + 0.5), 2) * 3.14159 ELSE 0 END)) as BIGLEAF_MAPLE_CROWN_AREA,
     
     -- Red Alder (Alnus rubra) - SPCD 351
     SUM(CASE WHEN t.SPCD = 351 THEN 1 ELSE 0 END) as RED_ALDER_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 351 THEN t.CARBON_AG ELSE 0 END)) as RED_ALDER_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 351 THEN t.CARBON_AG ELSE 0 END), 0) as RED_ALDER_CARBON,
     ROUND(SUM(CASE WHEN t.SPCD = 351 THEN POWER((0.4 * t.DIA + 0.5), 2) * 3.14159 ELSE 0 END)) as RED_ALDER_CROWN_AREA,
     
     -- Black Cottonwood (Populus trichocarpa) - SPCD 746
     SUM(CASE WHEN t.SPCD = 746 THEN 1 ELSE 0 END) as BLACK_COTTONWOOD_COUNT,
-    ROUND(SUM(CASE WHEN t.SPCD = 746 THEN t.CARBON_AG ELSE 0 END)) as BLACK_COTTONWOOD_CARBON,
+    ROUND(SUM(CASE WHEN t.SPCD = 746 THEN t.CARBON_AG ELSE 0 END), 0) as BLACK_COTTONWOOD_CARBON,
     ROUND(SUM(CASE WHEN t.SPCD = 746 THEN POWER((0.4 * t.DIA + 0.5), 2) * 3.14159 ELSE 0 END)) as BLACK_COTTONWOOD_CROWN_AREA,
     
     -- Hardwood percentage (for forest type classification)
     SUM(CASE WHEN t.SPGRPCD >= 40 THEN 1 ELSE 0 END) as HARDWOOD_COUNT,
     
     -- Total metrics
-    ROUND(SUM(t.CARBON_AG)) as TOTAL_CARBON_AG,
-    ROUND(SUM(t.CARBON_BG)) as TOTAL_CARBON_BG,
+    ROUND(SUM(t.CARBON_AG), 0) as TOTAL_CARBON_AG,
+    ROUND(SUM(t.CARBON_BG), 0) as TOTAL_CARBON_BG,
     ROUND(SUM(t.DIA * t.DIA)) as TOTAL_BASAL_AREA,
     ROUND(SUM(POWER((0.3 * t.DIA + 1.2), 2) * 3.14159)) as TOTAL_CROWN_AREA,
     AVG(t.DIA) as MEAN_DBH,
@@ -119,13 +131,11 @@ SELECT
     -- Species diversity
     COUNT(DISTINCT t.SPCD) as SPECIES_COUNT
 
-FROM PLOT p
-LEFT JOIN COND c ON p.CN = c.PLT_CN AND c.CONDID = 1  -- Main condition
-LEFT JOIN TREE t ON p.CN = t.PLT_CN
-WHERE p.LAT IS NOT NULL 
-    AND p.LON IS NOT NULL
-    AND p.PLOT_STATUS_CD = 1  -- Forested plots only
-GROUP BY p.CN, p.STATECD, p.UNITCD, p.COUNTYCD, p.PLOT, p.LAT, p.LON, p.INVYR, p.ELEV,
+FROM latest_plots lp
+LEFT JOIN COND c ON lp.PLOT_CN = c.PLT_CN AND c.CONDID = 1  -- Main condition
+LEFT JOIN TREE t ON lp.PLOT_CN = t.PLT_CN
+WHERE lp.rn = 1  -- Only most recent survey for each plot location
+GROUP BY lp.PLOT_CN, lp.STATECD, lp.UNITCD, lp.COUNTYCD, lp.PLOT, lp.LAT, lp.LON, lp.INVYR, lp.ELEV,
          c.FORTYPCD, c.FLDTYPCD, c.STDAGE, c.ADFORCD, c.SLOPE, c.ASPECT, c.LIVE_CANOPY_CVR_PCT
 HAVING TOTAL_TREES > 0  -- Only plots with trees
 ORDER BY TOTAL_CARBON_AG DESC;
@@ -157,32 +167,29 @@ else:
     raise Exception("No data could be extracted from any database")
 
 # Calculate relative composition
-df['DOUGLAS_FIR_PERCENT'] = (df['DOUGLAS_FIR_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['HEMLOCK_PERCENT'] = (df['HEMLOCK_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['CEDAR_PERCENT'] = (df['CEDAR_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['TRUE_FIR_PERCENT'] = (df['TRUE_FIR_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['ALL_PINE_PERCENT'] = (df['ALL_PINE_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['BIGLEAF_MAPLE_PERCENT'] = (df['BIGLEAF_MAPLE_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['RED_ALDER_PERCENT'] = (df['RED_ALDER_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['BLACK_COTTONWOOD_PERCENT'] = (df['BLACK_COTTONWOOD_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
-df['HARDWOOD_PERCENT'] = (df['HARDWOOD_COUNT'] / df['TOTAL_TREES'] * 100).round(1)
+df['DOUGLAS_FIR_PERCENT'] = (df['DOUGLAS_FIR_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['WESTERN_HEMLOCK_PERCENT'] = (df['WESTERN_HEMLOCK_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['WESTERN_RED_CEDAR_PERCENT'] = (df['WESTERN_RED_CEDAR_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['SITKA_SPRUCE_PERCENT'] = (df['SITKA_SPRUCE_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['NOBLE_FIR_PERCENT'] = (df['NOBLE_FIR_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['PACIFIC_SILVER_FIR_PERCENT'] = (df['PACIFIC_SILVER_FIR_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['BIGLEAF_MAPLE_PERCENT'] = (df['BIGLEAF_MAPLE_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['RED_ALDER_PERCENT'] = (df['RED_ALDER_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['BLACK_COTTONWOOD_PERCENT'] = (df['BLACK_COTTONWOOD_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
+df['HARDWOOD_PERCENT'] = (df['HARDWOOD_COUNT'] / df['TOTAL_TREES'] * 100).round(2)
 
 # Define forest type based on dominant species
 def classify_forest_type(row):
     if row['DOUGLAS_FIR_PERCENT'] >= 50:
         return 'Douglas-fir Dominant'
-    elif row['HEMLOCK_PERCENT'] >= 50:
+    elif row['WESTERN_HEMLOCK_PERCENT'] >= 50:
         return 'Western Hemlock Dominant'
-    elif row['CEDAR_PERCENT'] >= 50:
+    elif row['WESTERN_RED_CEDAR_PERCENT'] >= 50:
         return 'Western Red Cedar Dominant'
     elif row['HARDWOOD_PERCENT'] >= 50:
         return 'Hardwood Dominant'
-    elif (row['DOUGLAS_FIR_PERCENT'] + row['HEMLOCK_PERCENT']) >= 50:
+    elif (row['DOUGLAS_FIR_PERCENT'] + row['WESTERN_HEMLOCK_PERCENT']) >= 50:
         return 'Douglas-fir/Western Hemlock Mixed'
-    elif row['TRUE_FIR_COUNT'] >= row['TOTAL_TREES'] * 0.5:
-        return 'True Fir Dominant'
-    elif row['ALL_PINE_COUNT'] >= row['TOTAL_TREES'] * 0.5:
-        return 'Pine Dominant'
     else:
         return 'Mixed Conifer'
 
@@ -212,15 +219,16 @@ for forest_type, count in forest_type_counts.items():
     print(f"  {forest_type}: {count:,} plots ({pct:.1f}%)")
 
 print(f"\nSpecies Composition Summary:")
-print(f"Plots with Douglas-fir: {(df['DOUGLAS_FIR_COUNT'] > 0).sum():,} ({100*(df['DOUGLAS_FIR_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Western Hemlock: {(df['HEMLOCK_COUNT'] > 0).sum():,} ({100*(df['HEMLOCK_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Western Red Cedar: {(df['CEDAR_COUNT'] > 0).sum():,} ({100*(df['CEDAR_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with True Firs: {(df['TRUE_FIR_COUNT'] > 0).sum():,} ({100*(df['TRUE_FIR_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Pines: {(df['ALL_PINE_COUNT'] > 0).sum():,} ({100*(df['ALL_PINE_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Bigleaf Maple: {(df['BIGLEAF_MAPLE_COUNT'] > 0).sum():,} ({100*(df['BIGLEAF_MAPLE_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Red Alder: {(df['RED_ALDER_COUNT'] > 0).sum():,} ({100*(df['RED_ALDER_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Black Cottonwood: {(df['BLACK_COTTONWOOD_COUNT'] > 0).sum():,} ({100*(df['BLACK_COTTONWOOD_COUNT'] > 0).sum()/len(df):.1f}%)")
-print(f"Plots with Hardwoods (any): {(df['HARDWOOD_COUNT'] > 0).sum():,} ({100*(df['HARDWOOD_COUNT'] > 0).sum()/len(df):.1f}%)")
+print(f"Plots with Douglas-fir: {(df['DOUGLAS_FIR_COUNT'] > 0).sum():,} ({100*(df['DOUGLAS_FIR_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Western Hemlock: {(df['WESTERN_HEMLOCK_COUNT'] > 0).sum():,} ({100*(df['WESTERN_HEMLOCK_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Western Red Cedar: {(df['WESTERN_RED_CEDAR_COUNT'] > 0).sum():,} ({100*(df['WESTERN_RED_CEDAR_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Sitka Spruce: {(df['SITKA_SPRUCE_COUNT'] > 0).sum():,} ({100*(df['SITKA_SPRUCE_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Noble Fir: {(df['NOBLE_FIR_COUNT'] > 0).sum():,} ({100*(df['NOBLE_FIR_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Pacific Silver Fir: {(df['PACIFIC_SILVER_FIR_COUNT'] > 0).sum():,} ({100*(df['PACIFIC_SILVER_FIR_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Bigleaf Maple: {(df['BIGLEAF_MAPLE_COUNT'] > 0).sum():,} ({100*(df['BIGLEAF_MAPLE_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Red Alder: {(df['RED_ALDER_COUNT'] > 0).sum():,} ({100*(df['RED_ALDER_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Black Cottonwood: {(df['BLACK_COTTONWOOD_COUNT'] > 0).sum():,} ({100*(df['BLACK_COTTONWOOD_COUNT'] > 0).sum()/len(df):.2f}%)")
+print(f"Plots with Hardwoods (any): {(df['HARDWOOD_COUNT'] > 0).sum():,} ({100*(df['HARDWOOD_COUNT'] > 0).sum()/len(df):.2f}%)")
 
 # Show some example records
 print(f"\nExample High-Diversity Plots:")
