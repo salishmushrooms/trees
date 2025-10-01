@@ -1,0 +1,307 @@
+US_L3CODE 1
+US_L3NAME Coast Range
+Total Plots in US_L3CODE = 1 area: 1071
+Average Tree Cover: 30.1%
+Total Area: 37634.0 km²
+
+Western Hemlock - 12902 trees (found in 798 plots)
+Douglas-Fir - 11885 trees (found in 740 plots)
+Red Alder - 3008 trees (found in 406 plots)
+Western Redcedar - 2286 trees (found in 325 plots)
+Pacific Silver Fir - 1744 trees (found in 195 plots)
+Sitka Spruce - 751 trees (found in 196 plots)
+Bigleaf Maple - 581 trees (found in 91 plots)
+Mountain Hemlock - 142 trees (found in 16 plots)
+Lodgepole Pine - 138 trees (found in 16 plots)
+Alaska Yellow-Cedar - 98 trees (found in 19 plots)
+Oregon Crab Apple - 97 trees (found in 26 plots)
+Bitter Cherry - 93 trees (found in 34 plots)
+Grand Fir - 39 trees (found in 20 plots)
+Other Or Unknown Live Tree - 34 trees (found in 12 plots)
+Pacific Yew - 29 trees (found in 20 plots)
+Pacific Madrone - 26 trees (found in 5 plots)
+Black Cottonwood - 24 trees (found in 13 plots)
+Subalpine Fir - 24 trees (found in 4 plots)
+Prunus - 23 trees (found in 5 plots)
+Noble Fir - 21 trees (found in 7 plots)
+Western White Pine - 19 trees (found in 12 plots)
+Oregon Ash - 16 trees (found in 5 plots)
+Willow Spp. - 14 trees (found in 3 plots)
+Chokecherry - 10 trees (found in 3 plots)
+Pacific Dogwood - 3 trees (found in 2 plots)
+Paper Birch - 1 trees (found in 1 plots)
+English Holly - 1 trees (found in 1 plots)
+Engelmann Spruce - 1 trees (found in 1 plots)
+Apple Spp. - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 10
+US_L3NAME Columbia Plateau
+Total Plots in US_L3CODE = 10 area: 167
+Average Tree Cover: 0.8%
+Total Area: 132394.6 km²
+
+Ponderosa Pine - 777 trees (found in 116 plots)
+Douglas-Fir - 559 trees (found in 61 plots)
+Oregon White Oak - 161 trees (found in 17 plots)
+Quaking Aspen - 79 trees (found in 7 plots)
+Grand Fir - 57 trees (found in 5 plots)
+Black Cottonwood - 56 trees (found in 9 plots)
+Northern California Black Walnut - 22 trees (found in 1 plots)
+Bitter Cherry - 14 trees (found in 2 plots)
+Chokecherry - 11 trees (found in 4 plots)
+Bigleaf Maple - 8 trees (found in 2 plots)
+White Alder - 5 trees (found in 2 plots)
+Willow Spp. - 5 trees (found in 1 plots)
+Water Birch - 4 trees (found in 1 plots)
+Western Larch - 4 trees (found in 1 plots)
+Walnut Spp. - 2 trees (found in 1 plots)
+Paper Birch - 2 trees (found in 1 plots)
+Red Alder - 1 trees (found in 1 plots)
+Lodgepole Pine - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 11
+US_L3NAME Blue Mountains
+Total Plots in US_L3CODE = 11 area: 134
+Average Tree Cover: 14.4%
+Total Area: 4389.6 km²
+
+Grand Fir - 751 trees (found in 67 plots)
+Douglas-Fir - 508 trees (found in 84 plots)
+Ponderosa Pine - 280 trees (found in 59 plots)
+Engelmann Spruce - 205 trees (found in 30 plots)
+Subalpine Fir - 203 trees (found in 19 plots)
+Western Larch - 120 trees (found in 34 plots)
+Lodgepole Pine - 29 trees (found in 10 plots)
+Pacific Yew - 21 trees (found in 4 plots)
+Bitter Cherry - 9 trees (found in 4 plots)
+Western Juniper - 5 trees (found in 3 plots)
+Sitka Spruce - 3 trees (found in 1 plots)
+Black Cottonwood - 3 trees (found in 1 plots)
+Water Birch - 3 trees (found in 1 plots)
+Rocky Mountain Maple - 2 trees (found in 2 plots)
+Whitebark Pine - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 15
+US_L3NAME Northern Rockies
+Total Plots in US_L3CODE = 15 area: 1447
+Average Tree Cover: 20.2%
+Total Area: 48603.4 km²
+
+Douglas-Fir - 11477 trees (found in 1123 plots)
+Western Redcedar - 4636 trees (found in 341 plots)
+Lodgepole Pine - 4094 trees (found in 439 plots)
+Western Larch - 3685 trees (found in 670 plots)
+Ponderosa Pine - 3475 trees (found in 574 plots)
+Grand Fir - 2775 trees (found in 366 plots)
+Subalpine Fir - 1593 trees (found in 218 plots)
+Western Hemlock - 1551 trees (found in 160 plots)
+Engelmann Spruce - 1383 trees (found in 260 plots)
+Paper Birch - 407 trees (found in 97 plots)
+Quaking Aspen - 152 trees (found in 72 plots)
+Western White Pine - 143 trees (found in 63 plots)
+Black Cottonwood - 114 trees (found in 42 plots)
+White Alder - 58 trees (found in 7 plots)
+Bitter Cherry - 47 trees (found in 15 plots)
+Water Birch - 40 trees (found in 14 plots)
+Chokecherry - 13 trees (found in 6 plots)
+Red Alder - 10 trees (found in 5 plots)
+Willow Spp. - 5 trees (found in 2 plots)
+Other Or Unknown Live Tree - 4 trees (found in 1 plots)
+Rocky Mountain Maple - 3 trees (found in 1 plots)
+Prunus - 3 trees (found in 1 plots)
+Pacific Yew - 3 trees (found in 2 plots)
+Pacific Silver Fir - 3 trees (found in 1 plots)
+Whitebark Pine - 2 trees (found in 1 plots)
+Bigleaf Maple - 1 trees (found in 1 plots)
+Mountain Hemlock - 1 trees (found in 1 plots)
+Subalpine Larch - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 2
+US_L3NAME Puget Lowland
+Total Plots in US_L3CODE = 2 area: 576
+Average Tree Cover: 14.1%
+Total Area: 37296.8 km²
+
+Douglas-Fir - 5842 trees (found in 441 plots)
+Red Alder - 2001 trees (found in 302 plots)
+Western Redcedar - 1513 trees (found in 253 plots)
+Western Hemlock - 1502 trees (found in 214 plots)
+Bigleaf Maple - 1100 trees (found in 189 plots)
+Black Cottonwood - 230 trees (found in 56 plots)
+Oregon Ash - 174 trees (found in 24 plots)
+Bitter Cherry - 136 trees (found in 48 plots)
+Paper Birch - 115 trees (found in 25 plots)
+Lodgepole Pine - 98 trees (found in 18 plots)
+Pacific Silver Fir - 85 trees (found in 10 plots)
+Grand Fir - 81 trees (found in 38 plots)
+Sitka Spruce - 33 trees (found in 18 plots)
+Pacific Madrone - 32 trees (found in 17 plots)
+Western White Pine - 29 trees (found in 10 plots)
+Oregon Crab Apple - 22 trees (found in 7 plots)
+Willow Spp. - 18 trees (found in 6 plots)
+Pacific Yew - 16 trees (found in 8 plots)
+Oregon White Oak - 16 trees (found in 4 plots)
+Other Or Unknown Live Tree - 15 trees (found in 9 plots)
+Chokecherry - 13 trees (found in 6 plots)
+Prunus - 11 trees (found in 9 plots)
+Pacific Dogwood - 10 trees (found in 4 plots)
+Noble Fir - 8 trees (found in 3 plots)
+White Willow - 7 trees (found in 1 plots)
+Subalpine Fir - 6 trees (found in 2 plots)
+Alaska Yellow-Cedar - 4 trees (found in 2 plots)
+Giant Sequoia - 4 trees (found in 1 plots)
+Knobcone Pine - 3 trees (found in 1 plots)
+Mountain Hemlock - 2 trees (found in 2 plots)
+Sweet Cherry - 2 trees (found in 1 plots)
+Vine Maple - 2 trees (found in 1 plots)
+Apple Spp. - 2 trees (found in 1 plots)
+Ponderosa Pine - 1 trees (found in 1 plots)
+European Plum - 1 trees (found in 1 plots)
+Engelmann Spruce - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 3
+US_L3NAME Willamette Valley
+Total Plots in US_L3CODE = 3 area: 16
+Average Tree Cover: 10.9%
+Total Area: 2193.7 km²
+
+Douglas-Fir - 77 trees (found in 9 plots)
+Bigleaf Maple - 58 trees (found in 7 plots)
+Red Alder - 32 trees (found in 10 plots)
+Oregon Ash - 22 trees (found in 3 plots)
+Bitter Cherry - 20 trees (found in 4 plots)
+Black Cottonwood - 17 trees (found in 3 plots)
+Western Hemlock - 5 trees (found in 1 plots)
+Pacific Dogwood - 4 trees (found in 2 plots)
+Grand Fir - 1 trees (found in 1 plots)
+Western Redcedar - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 4
+US_L3NAME Cascades
+Total Plots in US_L3CODE = 4 area: 1255
+Average Tree Cover: 31.1%
+Total Area: 33563.1 km²
+
+Douglas-Fir - 16987 trees (found in 1001 plots)
+Western Hemlock - 9262 trees (found in 796 plots)
+Pacific Silver Fir - 8255 trees (found in 515 plots)
+Red Alder - 2162 trees (found in 302 plots)
+Noble Fir - 1794 trees (found in 254 plots)
+Western Redcedar - 1487 trees (found in 313 plots)
+Subalpine Fir - 1304 trees (found in 131 plots)
+Mountain Hemlock - 1118 trees (found in 142 plots)
+Alaska Yellow-Cedar - 543 trees (found in 72 plots)
+Bigleaf Maple - 487 trees (found in 115 plots)
+Lodgepole Pine - 371 trees (found in 52 plots)
+Grand Fir - 285 trees (found in 50 plots)
+Engelmann Spruce - 284 trees (found in 62 plots)
+Western White Pine - 231 trees (found in 81 plots)
+Black Cottonwood - 118 trees (found in 42 plots)
+Bitter Cherry - 110 trees (found in 33 plots)
+Western Larch - 73 trees (found in 19 plots)
+Pacific Yew - 72 trees (found in 25 plots)
+Pacific Dogwood - 28 trees (found in 16 plots)
+Oregon White Oak - 19 trees (found in 2 plots)
+Chokecherry - 15 trees (found in 3 plots)
+Whitebark Pine - 15 trees (found in 3 plots)
+Oregon Ash - 10 trees (found in 2 plots)
+Sitka Spruce - 8 trees (found in 3 plots)
+Ponderosa Pine - 5 trees (found in 4 plots)
+Oregon Crab Apple - 5 trees (found in 5 plots)
+Other Or Unknown Live Tree - 2 trees (found in 2 plots)
+Pacific Madrone - 2 trees (found in 1 plots)
+White Alder - 2 trees (found in 1 plots)
+Sweet Cherry - 1 trees (found in 1 plots)
+Prunus - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 77
+US_L3NAME North Cascades
+Total Plots in US_L3CODE = 77 area: 2066
+Average Tree Cover: 18.2%
+Total Area: 68463.2 km²
+
+Douglas-Fir - 12762 trees (found in 1121 plots)
+Pacific Silver Fir - 11154 trees (found in 629 plots)
+Western Hemlock - 10833 trees (found in 673 plots)
+Subalpine Fir - 4795 trees (found in 395 plots)
+Mountain Hemlock - 3814 trees (found in 358 plots)
+Western Redcedar - 3009 trees (found in 451 plots)
+Lodgepole Pine - 2957 trees (found in 255 plots)
+Ponderosa Pine - 2425 trees (found in 412 plots)
+Grand Fir - 1570 trees (found in 185 plots)
+Engelmann Spruce - 1380 trees (found in 220 plots)
+Red Alder - 1169 trees (found in 189 plots)
+Alaska Yellow-Cedar - 898 trees (found in 107 plots)
+Bigleaf Maple - 524 trees (found in 102 plots)
+Whitebark Pine - 428 trees (found in 90 plots)
+Subalpine Larch - 414 trees (found in 44 plots)
+Western Larch - 403 trees (found in 78 plots)
+Noble Fir - 270 trees (found in 28 plots)
+Black Cottonwood - 164 trees (found in 63 plots)
+Western White Pine - 139 trees (found in 71 plots)
+Paper Birch - 138 trees (found in 24 plots)
+Pacific Yew - 97 trees (found in 34 plots)
+Quaking Aspen - 96 trees (found in 18 plots)
+Bitter Cherry - 70 trees (found in 35 plots)
+Sitka Spruce - 40 trees (found in 15 plots)
+Chokecherry - 15 trees (found in 5 plots)
+Prunus - 12 trees (found in 4 plots)
+Other Or Unknown Live Tree - 8 trees (found in 4 plots)
+Oregon Crab Apple - 8 trees (found in 4 plots)
+Willow Spp. - 5 trees (found in 2 plots)
+Water Birch - 3 trees (found in 2 plots)
+Pacific Dogwood - 3 trees (found in 3 plots)
+Pacific Madrone - 2 trees (found in 1 plots)
+White Alder - 1 trees (found in 1 plots)
+
+============================================================
+
+US_L3CODE 9
+US_L3NAME Eastern Cascades Slopes and Foothills
+Total Plots in US_L3CODE = 9 area: 542
+Average Tree Cover: 13.5%
+Total Area: 17182.6 km²
+
+Douglas-Fir - 4196 trees (found in 380 plots)
+Grand Fir - 2646 trees (found in 282 plots)
+Ponderosa Pine - 2319 trees (found in 311 plots)
+Subalpine Fir - 796 trees (found in 70 plots)
+Lodgepole Pine - 740 trees (found in 87 plots)
+Oregon White Oak - 676 trees (found in 62 plots)
+Western Larch - 505 trees (found in 122 plots)
+Engelmann Spruce - 365 trees (found in 63 plots)
+Western Hemlock - 225 trees (found in 35 plots)
+Mountain Hemlock - 225 trees (found in 28 plots)
+Western Redcedar - 187 trees (found in 25 plots)
+Pacific Silver Fir - 144 trees (found in 21 plots)
+Bigleaf Maple - 105 trees (found in 23 plots)
+Western White Pine - 75 trees (found in 43 plots)
+Red Alder - 66 trees (found in 10 plots)
+Alaska Yellow-Cedar - 55 trees (found in 9 plots)
+Pacific Dogwood - 45 trees (found in 12 plots)
+Quaking Aspen - 37 trees (found in 6 plots)
+Black Cottonwood - 27 trees (found in 14 plots)
+Noble Fir - 25 trees (found in 6 plots)
+White Fir - 12 trees (found in 1 plots)
+Bitter Cherry - 9 trees (found in 4 plots)
+Pacific Yew - 7 trees (found in 3 plots)
+Oregon Crab Apple - 7 trees (found in 1 plots)
+Whitebark Pine - 6 trees (found in 6 plots)
+Willow Spp. - 4 trees (found in 2 plots)
+Chokecherry - 2 trees (found in 1 plots)
+
+============================================================

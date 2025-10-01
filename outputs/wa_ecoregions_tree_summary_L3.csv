@@ -1,0 +1,228 @@
+L3_CODE,L3_NAME,species_common_name,tree_count,plots_with_species,total_plots_in_ecoregion,avg_tree_cover_pct,area_sqkm,pct_plots_with_species
+1,Coast Range,western hemlock,12902,798,1071,30.1,37634.0,74.5
+1,Coast Range,Douglas-fir,11885,740,1071,30.1,37634.0,69.1
+1,Coast Range,red alder,3008,406,1071,30.1,37634.0,37.9
+1,Coast Range,western redcedar,2286,325,1071,30.1,37634.0,30.3
+1,Coast Range,Pacific silver fir,1744,195,1071,30.1,37634.0,18.2
+1,Coast Range,Sitka spruce,751,196,1071,30.1,37634.0,18.3
+1,Coast Range,bigleaf maple,581,91,1071,30.1,37634.0,8.5
+1,Coast Range,mountain hemlock,142,16,1071,30.1,37634.0,1.5
+1,Coast Range,lodgepole pine,138,16,1071,30.1,37634.0,1.5
+1,Coast Range,Alaska yellow-cedar,98,19,1071,30.1,37634.0,1.8
+1,Coast Range,Oregon crab apple,97,26,1071,30.1,37634.0,2.4
+1,Coast Range,bitter cherry,93,34,1071,30.1,37634.0,3.2
+1,Coast Range,grand fir,39,20,1071,30.1,37634.0,1.9
+1,Coast Range,other or unknown live tree,34,12,1071,30.1,37634.0,1.1
+1,Coast Range,Pacific yew,29,20,1071,30.1,37634.0,1.9
+1,Coast Range,Pacific madrone,26,5,1071,30.1,37634.0,0.5
+1,Coast Range,black cottonwood,24,13,1071,30.1,37634.0,1.2
+1,Coast Range,subalpine fir,24,4,1071,30.1,37634.0,0.4
+1,Coast Range,Prunus,23,5,1071,30.1,37634.0,0.5
+1,Coast Range,noble fir,21,7,1071,30.1,37634.0,0.7
+1,Coast Range,western white pine,19,12,1071,30.1,37634.0,1.1
+1,Coast Range,Oregon ash,16,5,1071,30.1,37634.0,0.5
+1,Coast Range,willow spp.,14,3,1071,30.1,37634.0,0.3
+1,Coast Range,chokecherry,10,3,1071,30.1,37634.0,0.3
+1,Coast Range,Pacific dogwood,3,2,1071,30.1,37634.0,0.2
+1,Coast Range,Engelmann spruce,1,1,1071,30.1,37634.0,0.1
+1,Coast Range,English holly,1,1,1071,30.1,37634.0,0.1
+1,Coast Range,apple spp.,1,1,1071,30.1,37634.0,0.1
+1,Coast Range,paper birch,1,1,1071,30.1,37634.0,0.1
+10,Columbia Plateau,ponderosa pine,777,116,167,0.8,132394.6,69.5
+10,Columbia Plateau,Douglas-fir,559,61,167,0.8,132394.6,36.5
+10,Columbia Plateau,Oregon white oak,161,17,167,0.8,132394.6,10.2
+10,Columbia Plateau,quaking aspen,79,7,167,0.8,132394.6,4.2
+10,Columbia Plateau,grand fir,57,5,167,0.8,132394.6,3.0
+10,Columbia Plateau,black cottonwood,56,9,167,0.8,132394.6,5.4
+10,Columbia Plateau,northern California black walnut,22,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,bitter cherry,14,2,167,0.8,132394.6,1.2
+10,Columbia Plateau,chokecherry,11,4,167,0.8,132394.6,2.4
+10,Columbia Plateau,bigleaf maple,8,2,167,0.8,132394.6,1.2
+10,Columbia Plateau,white alder,5,2,167,0.8,132394.6,1.2
+10,Columbia Plateau,willow spp.,5,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,water birch,4,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,western larch,4,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,paper birch,2,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,walnut spp.,2,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,lodgepole pine,1,1,167,0.8,132394.6,0.6
+10,Columbia Plateau,red alder,1,1,167,0.8,132394.6,0.6
+11,Blue Mountains,grand fir,751,67,134,14.4,4389.6,50.0
+11,Blue Mountains,Douglas-fir,508,84,134,14.4,4389.6,62.7
+11,Blue Mountains,ponderosa pine,280,59,134,14.4,4389.6,44.0
+11,Blue Mountains,Engelmann spruce,205,30,134,14.4,4389.6,22.4
+11,Blue Mountains,subalpine fir,203,19,134,14.4,4389.6,14.2
+11,Blue Mountains,western larch,120,34,134,14.4,4389.6,25.4
+11,Blue Mountains,lodgepole pine,29,10,134,14.4,4389.6,7.5
+11,Blue Mountains,Pacific yew,21,4,134,14.4,4389.6,3.0
+11,Blue Mountains,bitter cherry,9,4,134,14.4,4389.6,3.0
+11,Blue Mountains,western juniper,5,3,134,14.4,4389.6,2.2
+11,Blue Mountains,Sitka spruce,3,1,134,14.4,4389.6,0.7
+11,Blue Mountains,black cottonwood,3,1,134,14.4,4389.6,0.7
+11,Blue Mountains,water birch,3,1,134,14.4,4389.6,0.7
+11,Blue Mountains,Rocky Mountain maple,2,2,134,14.4,4389.6,1.5
+11,Blue Mountains,whitebark pine,1,1,134,14.4,4389.6,0.7
+15,Northern Rockies,Douglas-fir,11477,1123,1447,20.2,48603.4,77.6
+15,Northern Rockies,western redcedar,4636,341,1447,20.2,48603.4,23.6
+15,Northern Rockies,lodgepole pine,4094,439,1447,20.2,48603.4,30.3
+15,Northern Rockies,western larch,3685,670,1447,20.2,48603.4,46.3
+15,Northern Rockies,ponderosa pine,3475,574,1447,20.2,48603.4,39.7
+15,Northern Rockies,grand fir,2775,366,1447,20.2,48603.4,25.3
+15,Northern Rockies,subalpine fir,1593,218,1447,20.2,48603.4,15.1
+15,Northern Rockies,western hemlock,1551,160,1447,20.2,48603.4,11.1
+15,Northern Rockies,Engelmann spruce,1383,260,1447,20.2,48603.4,18.0
+15,Northern Rockies,paper birch,407,97,1447,20.2,48603.4,6.7
+15,Northern Rockies,quaking aspen,152,72,1447,20.2,48603.4,5.0
+15,Northern Rockies,western white pine,143,63,1447,20.2,48603.4,4.4
+15,Northern Rockies,black cottonwood,114,42,1447,20.2,48603.4,2.9
+15,Northern Rockies,white alder,58,7,1447,20.2,48603.4,0.5
+15,Northern Rockies,bitter cherry,47,15,1447,20.2,48603.4,1.0
+15,Northern Rockies,water birch,40,14,1447,20.2,48603.4,1.0
+15,Northern Rockies,chokecherry,13,6,1447,20.2,48603.4,0.4
+15,Northern Rockies,red alder,10,5,1447,20.2,48603.4,0.3
+15,Northern Rockies,willow spp.,5,2,1447,20.2,48603.4,0.1
+15,Northern Rockies,other or unknown live tree,4,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,Pacific silver fir,3,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,Pacific yew,3,2,1447,20.2,48603.4,0.1
+15,Northern Rockies,Prunus,3,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,Rocky Mountain maple,3,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,whitebark pine,2,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,bigleaf maple,1,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,mountain hemlock,1,1,1447,20.2,48603.4,0.1
+15,Northern Rockies,subalpine larch,1,1,1447,20.2,48603.4,0.1
+2,Puget Lowland,Douglas-fir,5842,441,576,14.1,37296.8,76.6
+2,Puget Lowland,red alder,2001,302,576,14.1,37296.8,52.4
+2,Puget Lowland,western redcedar,1513,253,576,14.1,37296.8,43.9
+2,Puget Lowland,western hemlock,1502,214,576,14.1,37296.8,37.2
+2,Puget Lowland,bigleaf maple,1100,189,576,14.1,37296.8,32.8
+2,Puget Lowland,black cottonwood,230,56,576,14.1,37296.8,9.7
+2,Puget Lowland,Oregon ash,174,24,576,14.1,37296.8,4.2
+2,Puget Lowland,bitter cherry,136,48,576,14.1,37296.8,8.3
+2,Puget Lowland,paper birch,115,25,576,14.1,37296.8,4.3
+2,Puget Lowland,lodgepole pine,98,18,576,14.1,37296.8,3.1
+2,Puget Lowland,Pacific silver fir,85,10,576,14.1,37296.8,1.7
+2,Puget Lowland,grand fir,81,38,576,14.1,37296.8,6.6
+2,Puget Lowland,Sitka spruce,33,18,576,14.1,37296.8,3.1
+2,Puget Lowland,Pacific madrone,32,17,576,14.1,37296.8,3.0
+2,Puget Lowland,western white pine,29,10,576,14.1,37296.8,1.7
+2,Puget Lowland,Oregon crab apple,22,7,576,14.1,37296.8,1.2
+2,Puget Lowland,willow spp.,18,6,576,14.1,37296.8,1.0
+2,Puget Lowland,Oregon white oak,16,4,576,14.1,37296.8,0.7
+2,Puget Lowland,Pacific yew,16,8,576,14.1,37296.8,1.4
+2,Puget Lowland,other or unknown live tree,15,9,576,14.1,37296.8,1.6
+2,Puget Lowland,chokecherry,13,6,576,14.1,37296.8,1.0
+2,Puget Lowland,Prunus,11,9,576,14.1,37296.8,1.6
+2,Puget Lowland,Pacific dogwood,10,4,576,14.1,37296.8,0.7
+2,Puget Lowland,noble fir,8,3,576,14.1,37296.8,0.5
+2,Puget Lowland,white willow,7,1,576,14.1,37296.8,0.2
+2,Puget Lowland,subalpine fir,6,2,576,14.1,37296.8,0.3
+2,Puget Lowland,Alaska yellow-cedar,4,2,576,14.1,37296.8,0.3
+2,Puget Lowland,giant sequoia,4,1,576,14.1,37296.8,0.2
+2,Puget Lowland,knobcone pine,3,1,576,14.1,37296.8,0.2
+2,Puget Lowland,apple spp.,2,1,576,14.1,37296.8,0.2
+2,Puget Lowland,mountain hemlock,2,2,576,14.1,37296.8,0.3
+2,Puget Lowland,sweet cherry,2,1,576,14.1,37296.8,0.2
+2,Puget Lowland,vine maple,2,1,576,14.1,37296.8,0.2
+2,Puget Lowland,Engelmann spruce,1,1,576,14.1,37296.8,0.2
+2,Puget Lowland,European plum,1,1,576,14.1,37296.8,0.2
+2,Puget Lowland,ponderosa pine,1,1,576,14.1,37296.8,0.2
+3,Willamette Valley,Douglas-fir,77,9,16,10.9,2193.7,56.2
+3,Willamette Valley,bigleaf maple,58,7,16,10.9,2193.7,43.8
+3,Willamette Valley,red alder,32,10,16,10.9,2193.7,62.5
+3,Willamette Valley,Oregon ash,22,3,16,10.9,2193.7,18.8
+3,Willamette Valley,bitter cherry,20,4,16,10.9,2193.7,25.0
+3,Willamette Valley,black cottonwood,17,3,16,10.9,2193.7,18.8
+3,Willamette Valley,western hemlock,5,1,16,10.9,2193.7,6.2
+3,Willamette Valley,Pacific dogwood,4,2,16,10.9,2193.7,12.5
+3,Willamette Valley,grand fir,1,1,16,10.9,2193.7,6.2
+3,Willamette Valley,western redcedar,1,1,16,10.9,2193.7,6.2
+4,Cascades,Douglas-fir,16987,1001,1255,31.1,33563.1,79.8
+4,Cascades,western hemlock,9262,796,1255,31.1,33563.1,63.4
+4,Cascades,Pacific silver fir,8255,515,1255,31.1,33563.1,41.0
+4,Cascades,red alder,2162,302,1255,31.1,33563.1,24.1
+4,Cascades,noble fir,1794,254,1255,31.1,33563.1,20.2
+4,Cascades,western redcedar,1487,313,1255,31.1,33563.1,24.9
+4,Cascades,subalpine fir,1304,131,1255,31.1,33563.1,10.4
+4,Cascades,mountain hemlock,1118,142,1255,31.1,33563.1,11.3
+4,Cascades,Alaska yellow-cedar,543,72,1255,31.1,33563.1,5.7
+4,Cascades,bigleaf maple,487,115,1255,31.1,33563.1,9.2
+4,Cascades,lodgepole pine,371,52,1255,31.1,33563.1,4.1
+4,Cascades,grand fir,285,50,1255,31.1,33563.1,4.0
+4,Cascades,Engelmann spruce,284,62,1255,31.1,33563.1,4.9
+4,Cascades,western white pine,231,81,1255,31.1,33563.1,6.5
+4,Cascades,black cottonwood,118,42,1255,31.1,33563.1,3.3
+4,Cascades,bitter cherry,110,33,1255,31.1,33563.1,2.6
+4,Cascades,western larch,73,19,1255,31.1,33563.1,1.5
+4,Cascades,Pacific yew,72,25,1255,31.1,33563.1,2.0
+4,Cascades,Pacific dogwood,28,16,1255,31.1,33563.1,1.3
+4,Cascades,Oregon white oak,19,2,1255,31.1,33563.1,0.2
+4,Cascades,chokecherry,15,3,1255,31.1,33563.1,0.2
+4,Cascades,whitebark pine,15,3,1255,31.1,33563.1,0.2
+4,Cascades,Oregon ash,10,2,1255,31.1,33563.1,0.2
+4,Cascades,Sitka spruce,8,3,1255,31.1,33563.1,0.2
+4,Cascades,Oregon crab apple,5,5,1255,31.1,33563.1,0.4
+4,Cascades,ponderosa pine,5,4,1255,31.1,33563.1,0.3
+4,Cascades,Pacific madrone,2,1,1255,31.1,33563.1,0.1
+4,Cascades,other or unknown live tree,2,2,1255,31.1,33563.1,0.2
+4,Cascades,white alder,2,1,1255,31.1,33563.1,0.1
+4,Cascades,Prunus,1,1,1255,31.1,33563.1,0.1
+4,Cascades,sweet cherry,1,1,1255,31.1,33563.1,0.1
+77,North Cascades,Douglas-fir,12762,1121,2066,18.2,68463.2,54.3
+77,North Cascades,Pacific silver fir,11154,629,2066,18.2,68463.2,30.4
+77,North Cascades,western hemlock,10833,673,2066,18.2,68463.2,32.6
+77,North Cascades,subalpine fir,4795,395,2066,18.2,68463.2,19.1
+77,North Cascades,mountain hemlock,3814,358,2066,18.2,68463.2,17.3
+77,North Cascades,western redcedar,3009,451,2066,18.2,68463.2,21.8
+77,North Cascades,lodgepole pine,2957,255,2066,18.2,68463.2,12.3
+77,North Cascades,ponderosa pine,2425,412,2066,18.2,68463.2,19.9
+77,North Cascades,grand fir,1570,185,2066,18.2,68463.2,9.0
+77,North Cascades,Engelmann spruce,1380,220,2066,18.2,68463.2,10.6
+77,North Cascades,red alder,1169,189,2066,18.2,68463.2,9.1
+77,North Cascades,Alaska yellow-cedar,898,107,2066,18.2,68463.2,5.2
+77,North Cascades,bigleaf maple,524,102,2066,18.2,68463.2,4.9
+77,North Cascades,whitebark pine,428,90,2066,18.2,68463.2,4.4
+77,North Cascades,subalpine larch,414,44,2066,18.2,68463.2,2.1
+77,North Cascades,western larch,403,78,2066,18.2,68463.2,3.8
+77,North Cascades,noble fir,270,28,2066,18.2,68463.2,1.4
+77,North Cascades,black cottonwood,164,63,2066,18.2,68463.2,3.0
+77,North Cascades,western white pine,139,71,2066,18.2,68463.2,3.4
+77,North Cascades,paper birch,138,24,2066,18.2,68463.2,1.2
+77,North Cascades,Pacific yew,97,34,2066,18.2,68463.2,1.6
+77,North Cascades,quaking aspen,96,18,2066,18.2,68463.2,0.9
+77,North Cascades,bitter cherry,70,35,2066,18.2,68463.2,1.7
+77,North Cascades,Sitka spruce,40,15,2066,18.2,68463.2,0.7
+77,North Cascades,chokecherry,15,5,2066,18.2,68463.2,0.2
+77,North Cascades,Prunus,12,4,2066,18.2,68463.2,0.2
+77,North Cascades,Oregon crab apple,8,4,2066,18.2,68463.2,0.2
+77,North Cascades,other or unknown live tree,8,4,2066,18.2,68463.2,0.2
+77,North Cascades,willow spp.,5,2,2066,18.2,68463.2,0.1
+77,North Cascades,Pacific dogwood,3,3,2066,18.2,68463.2,0.1
+77,North Cascades,water birch,3,2,2066,18.2,68463.2,0.1
+77,North Cascades,Pacific madrone,2,1,2066,18.2,68463.2,0.0
+77,North Cascades,white alder,1,1,2066,18.2,68463.2,0.0
+9,Eastern Cascades Slopes and Foothills,Douglas-fir,4196,380,542,13.5,17182.6,70.1
+9,Eastern Cascades Slopes and Foothills,grand fir,2646,282,542,13.5,17182.6,52.0
+9,Eastern Cascades Slopes and Foothills,ponderosa pine,2319,311,542,13.5,17182.6,57.4
+9,Eastern Cascades Slopes and Foothills,subalpine fir,796,70,542,13.5,17182.6,12.9
+9,Eastern Cascades Slopes and Foothills,lodgepole pine,740,87,542,13.5,17182.6,16.1
+9,Eastern Cascades Slopes and Foothills,Oregon white oak,676,62,542,13.5,17182.6,11.4
+9,Eastern Cascades Slopes and Foothills,western larch,505,122,542,13.5,17182.6,22.5
+9,Eastern Cascades Slopes and Foothills,Engelmann spruce,365,63,542,13.5,17182.6,11.6
+9,Eastern Cascades Slopes and Foothills,mountain hemlock,225,28,542,13.5,17182.6,5.2
+9,Eastern Cascades Slopes and Foothills,western hemlock,225,35,542,13.5,17182.6,6.5
+9,Eastern Cascades Slopes and Foothills,western redcedar,187,25,542,13.5,17182.6,4.6
+9,Eastern Cascades Slopes and Foothills,Pacific silver fir,144,21,542,13.5,17182.6,3.9
+9,Eastern Cascades Slopes and Foothills,bigleaf maple,105,23,542,13.5,17182.6,4.2
+9,Eastern Cascades Slopes and Foothills,western white pine,75,43,542,13.5,17182.6,7.9
+9,Eastern Cascades Slopes and Foothills,red alder,66,10,542,13.5,17182.6,1.8
+9,Eastern Cascades Slopes and Foothills,Alaska yellow-cedar,55,9,542,13.5,17182.6,1.7
+9,Eastern Cascades Slopes and Foothills,Pacific dogwood,45,12,542,13.5,17182.6,2.2
+9,Eastern Cascades Slopes and Foothills,quaking aspen,37,6,542,13.5,17182.6,1.1
+9,Eastern Cascades Slopes and Foothills,black cottonwood,27,14,542,13.5,17182.6,2.6
+9,Eastern Cascades Slopes and Foothills,noble fir,25,6,542,13.5,17182.6,1.1
+9,Eastern Cascades Slopes and Foothills,white fir,12,1,542,13.5,17182.6,0.2
+9,Eastern Cascades Slopes and Foothills,bitter cherry,9,4,542,13.5,17182.6,0.7
+9,Eastern Cascades Slopes and Foothills,Oregon crab apple,7,1,542,13.5,17182.6,0.2
+9,Eastern Cascades Slopes and Foothills,Pacific yew,7,3,542,13.5,17182.6,0.6
+9,Eastern Cascades Slopes and Foothills,whitebark pine,6,6,542,13.5,17182.6,1.1
+9,Eastern Cascades Slopes and Foothills,willow spp.,4,2,542,13.5,17182.6,0.4
+9,Eastern Cascades Slopes and Foothills,chokecherry,2,1,542,13.5,17182.6,0.2
