@@ -29,7 +29,8 @@ from datetime import datetime
 from shapely.geometry import mapping
 warnings.filterwarnings('ignore')
 
-# GeoJSON optimization functions for MBTiles
+# GeoJSON optimization functions for PMTiles/MapLibre (formerly Mapbox/MBTiles)
+# NOTE: We now use MapLibre + PMTiles or direct GeoJSON instead of Mapbox + MBTiles.
 def round_coordinates(geom, precision=6):
     """Round coordinates to specified decimal places for smaller file sizes"""
     def round_coords(coords):
@@ -69,7 +70,7 @@ def get_essential_properties(properties):
     return {k: v for k, v in essential_props.items() if v is not None}
 
 def save_optimized_geojson(gdf, output_file, precision=6):
-    """Save GeoDataFrame as optimized GeoJSON for MBTiles"""
+    """Save GeoDataFrame as optimized GeoJSON for PMTiles or direct use with MapLibre"""
     print(f"  💾 Saving optimized GeoJSON (precision: {precision} decimal places)...")
     
     # Create optimized features
@@ -2766,14 +2767,14 @@ def main():
         species_filename = SPECIES_NAME.lower().replace(" ", "_")
         output_file = OUTPUT_DIR / f"{species_filename}_continuous_distribution_pnw{buffer_suffix}{output_suffix}{edited_suffix}{cache_suffix}.geojson"
         
-        # Save optimized version for MBTiles (smaller file size, fewer properties)
+        # Save optimized version for PMTiles/MapLibre (smaller file size, fewer properties)
         original_size_mb = 0
         try:
             save_optimized_geojson(distribution_gdf, output_file, precision=6)
             
             # Calculate size reduction if we can
             optimized_size_mb = output_file.stat().st_size / (1024 * 1024)
-            print(f"  📁 File size: {optimized_size_mb:.1f} MB (optimized for MBTiles)")
+            print(f"  📁 File size: {optimized_size_mb:.1f} MB (optimized for PMTiles/MapLibre)")
             
         except Exception as e:
             print(f"  ⚠️  Optimization failed, using standard GeoJSON: {e}")

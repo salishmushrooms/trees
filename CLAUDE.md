@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Pacific Northwest Forest Habitat Mapping Project** that uses FIA (Forest Inventory and Analysis) survey data to create tree species habitat range and relative abundance visualizations. The project analyzes forest composition data from Washington, Oregon, and Idaho to generate species distribution maps for use in web mapping applications via Mapbox.
+This is a **Pacific Northwest Forest Habitat Mapping Project** that uses FIA (Forest Inventory and Analysis) survey data to create tree species habitat range and relative abundance visualizations. The project analyzes forest composition data from Washington, Oregon, and Idaho to generate species distribution maps for use in web mapping applications via MapLibre + PMTiles (or direct GeoJSON). Previously used Mapbox/MBTiles — legacy references may remain in older scripts.
 
 ## The Team
 I am a single developer working as part of a single person company. I prefer simple methods for achieving our goals and want to avoid overengineering or creating complicated solutions with many configuration options that would be unlikely to be used.
@@ -108,14 +108,11 @@ python bulk_process_staged_species.py
 ./process_staged_species.sh
 ```
 
-### Mapbox Tile Generation
+### Tile Generation (MapLibre + PMTiles)
 ```bash
-# Create combined mbtiles file with all species layers
-cd scripts/visualization
-./create_mapbox_tilesets.sh
-
-# Output will be in outputs/mapbox_mbtiles/
-# Upload to Mapbox Studio for web mapping integration
+# Legacy MBTiles output still in outputs/mapbox_mbtiles/
+# Current approach: GeoJSON → PMTiles via Tippecanoe, served via MapLibre
+# See morel-maps project for PMTiles hosting pattern (Cloudflare R2)
 ```
 
 ## Database Schema
@@ -139,7 +136,7 @@ Key species codes used throughout the codebase:
 
 - **Primary Analysis**: Albers Equal Area (EPSG:5070) for area-accurate calculations
 - **Data Integration**: WGS84 (EPSG:4326) for combining disparate data sources
-- **Web Mapping**: Web Mercator (EPSG:3857) for Mapbox tile outputs
+- **Web Mapping**: Web Mercator (EPSG:3857) for MapLibre/PMTiles tile outputs
 
 ## File Naming Conventions
 
@@ -201,13 +198,13 @@ import scipy
   - ponderosa pine, quaking aspen, red alder, subalpine fir, tanoak
   - western hemlock, western juniper, white fir
 - **QGIS Workflow**: Established manual editing pipeline for habitat refinement
-- **Mapbox Integration**: Combined mbtiles generation for all species layers
+- **Map Integration**: Species distribution layers (PMTiles/GeoJSON for MapLibre)
 - **Carbon Analysis**: Plot-level carbon percentile calculations across all species
 
 ### Active Workflows
 - **Manual Habitat Editing**: Ongoing refinement of species ranges using QGIS
 - **Elevation/Tree Cover Constraints**: Applied to all processed species
-- **Web Map Development**: WordPress integration with Mapbox layer toggles
+- **Web Map Development**: WordPress integration with MapLibre layer toggles
 
 ## Documentation Structure
 
@@ -216,5 +213,5 @@ import scipy
 - `docs/MUSHROOM_HABITAT_MODELING_PLAN.md`: Detailed modeling framework
 - `docs/FIA_DATABASE_STRUCTURE_REFERENCE.md`: Database schema and query guide
 - `docs/PNW_SPECIES_REFERENCE.md`: Complete species codes and query examples
-- `MAPBOX_MBTILES_README.md`: Mapbox tile generation and upload instructions
+- `MAPBOX_MBTILES_README.md`: Tile generation and upload instructions (legacy Mapbox references, now using MapLibre + PMTiles)
 

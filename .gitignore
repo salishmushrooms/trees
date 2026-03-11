@@ -3,8 +3,10 @@
 *.tif
 *.bil
 *.mbtiles
+*.pmtiles
 *.gpkg
 *.geojson
+*.zip
 
 # Exclude specific large geojson files we want to keep
 !outputs/bioregions/*.geojson
@@ -15,6 +17,8 @@ data/raw/hydrography/
 data/raw/PNW\ Forest\ Inventory/
 data/raw/PRISM_ppt_provisional_4kmM3_2024_bil/
 data/raw/PRISM_ppt_30yr_normal_800mM4_all_bil/
+data/raw/LF2023_EVT_CONUS/
+data/raw/usgs_riparian/
 outputs/mapbox_masks/
 outputs/species_distribution/
 outputs/climate/
